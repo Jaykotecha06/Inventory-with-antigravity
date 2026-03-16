@@ -10,6 +10,7 @@ const Dashboard = () => {
     const { user } = useSelector(state => state.auth);
     const products = useSelector(state => state.products?.items || []);
     const sales = useSelector(state => state.sales?.items || []);
+    const { activeBusiness } = useSelector(state => state.business);
 
     // Perform calculations safely
     const totalProducts = products.length;
@@ -39,9 +40,23 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-800">Welcome back, {user?.name || 'User'}</h1>
-                <p className="text-gray-500">Here's a summary of your inventory and sales.</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                        {activeBusiness ? activeBusiness.name : 'Welcome back'}, {user?.name || 'User'}
+                    </h1>
+                    <p className="text-gray-500 mt-1">
+                        {activeBusiness
+                            ? `Viewing analytics for ${activeBusiness.category} operations.`
+                            : "Select a business to view your inventory and sales data."}
+                    </p>
+                </div>
+                {activeBusiness && (
+                    <div className="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Live Context: {activeBusiness.name}</span>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -82,6 +97,27 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* No Active Business Overlay */}
+            {!activeBusiness && (
+                <div className="fixed inset-0 z-[60] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-10 max-w-md w-full text-center shadow-2xl border border-gray-100 animate-in zoom-in duration-300">
+                        <div className="bg-indigo-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-100 rotate-3">
+                            <Package className="text-white" size={40} />
+                        </div>
+                        <h2 className="text-2xl font-black text-gray-900 mb-3 uppercase tracking-tight">Business Required</h2>
+                        <p className="text-gray-500 mb-8 font-medium leading-relaxed">
+                            To view dashboard analytics and manage your stock, you must first select an active business profile.
+                        </p>
+                        <a
+                            href="/businesses"
+                            className="block w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition shadow-xl hover:shadow-indigo-200 active:scale-95"
+                        >
+                            Select or Create Business
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

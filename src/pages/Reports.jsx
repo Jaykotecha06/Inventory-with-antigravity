@@ -9,6 +9,7 @@ const Reports = () => {
     const { items: products } = useSelector(state => state.products);
     const { items: allUsers } = useSelector(state => state.users);
     const { logs: inventoryLogs } = useSelector(state => state.inventory);
+    const { activeBusiness } = useSelector(state => state.business);
 
     const [dateRange, setDateRange] = useState('all');
     const [selectedStaff, setSelectedStaff] = useState('all');
@@ -270,21 +271,39 @@ const Reports = () => {
                     </table>
                 </div>
             </div>
+
+            {/* No Active Business Overlay */}
+            {!activeBusiness && (
+                <div className="fixed inset-0 z-[60] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+                        <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <TrendingUp className="text-indigo-600" size={32} />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No Business Selected</h2>
+                        <p className="text-gray-500 mb-6">You need to select a business profile before viewing detailed reports.</p>
+                        <a href="/businesses" className="block w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
+                            Go to My Businesses
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 // Add some CSS to help with printing
-const styleElement = document.createElement('style');
-styleElement.innerHTML = `
-    @media print {
-        .no-print { display: none !important; }
-        body { background: white !important; }
-        .bg-white { box-shadow: none !important; border: 1px solid #eee !important; }
-        aside, header { display: none !important; }
-        main { padding: 0 !important; margin: 0 !important; }
-    }
-`;
-document.head.appendChild(styleElement);
+if (typeof document !== 'undefined') {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+            .bg-white { box-shadow: none !important; border: 1px solid #eee !important; }
+            aside, header { display: none !important; }
+            main { padding: 0 !important; margin: 0 !important; }
+        }
+    `;
+    document.head.appendChild(styleElement);
+}
 
 export default Reports;

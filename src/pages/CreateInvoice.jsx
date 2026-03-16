@@ -11,6 +11,7 @@ const CreateInvoice = ({ onClose }) => {
     const { products } = useSelector(state => state);
     const { items: customers } = useSelector(state => state.customers);
     const { user } = useSelector(state => state.auth);
+    const { activeBusiness } = useSelector(state => state.business);
 
     const [customerName, setCustomerName] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
@@ -19,8 +20,10 @@ const CreateInvoice = ({ onClose }) => {
     const [items, setItems] = useState([{ id: Date.now(), productId: '', quantity: 1, price: 0, amount: 0 }]);
 
     useEffect(() => {
-        dispatch(fetchCustomers());
-    }, [dispatch]);
+        if (activeBusiness?.id) {
+            dispatch(fetchCustomers(activeBusiness.id));
+        }
+    }, [dispatch, activeBusiness]);
 
     const availableProducts = products.items.filter(p => p.stock > 0);
 
@@ -104,6 +107,7 @@ const CreateInvoice = ({ onClose }) => {
                 paymentStatus: 'Paid',
                 createdBy: user.uid,
                 creatorName: user.name || user.email,
+                businessId: activeBusiness.id,
                 createdAt: Date.now()
             };
 
@@ -116,7 +120,8 @@ const CreateInvoice = ({ onClose }) => {
                     type: 'OUT',
                     quantity: item.quantity,
                     reason: `Sale Invoice #${resultAction.id.substring(resultAction.id.length - 6).toUpperCase()}`,
-                    user: user.name || user.email
+                    user: user.name || user.email,
+                    businessId: activeBusiness.id
                 }));
             }
 

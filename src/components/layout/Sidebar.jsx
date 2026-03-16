@@ -8,7 +8,8 @@ import {
     FileText,
     Settings,
     LogOut,
-    Archive
+    Archive,
+    Building2
 } from 'lucide-react';
 import { logoutUser } from '../../redux/slices/authSlice';
 
@@ -23,6 +24,7 @@ const Sidebar = () => {
 
     const menuItems = [
         { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['Admin', 'Manager', 'Staff'] },
+        { path: '/businesses', icon: <Building2 size={20} />, label: 'My Businesses', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/products', icon: <Package size={20} />, label: 'Products', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/inventory', icon: <Archive size={20} />, label: 'Inventory', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales', roles: ['Admin', 'Manager', 'Staff'] },
@@ -46,8 +48,8 @@ const Sidebar = () => {
                         key={item.path}
                         to={item.path}
                         className={`flex items-center px-6 py-3 text-sm font-medium transition-colors ${location.pathname === item.path
-                                ? 'bg-gray-800 text-indigo-400 border-r-4 border-indigo-500'
-                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                            ? 'bg-gray-800 text-indigo-400 border-r-4 border-indigo-500'
+                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                             }`}
                     >
                         <span className="mr-3">{item.icon}</span>

@@ -8,14 +8,17 @@ const Customers = () => {
     const dispatch = useDispatch();
     const { items: customers, loading } = useSelector(state => state.customers);
     const { user } = useSelector(state => state.auth);
+    const { activeBusiness } = useSelector(state => state.business);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentCustomer, setCurrentCustomer] = useState({ name: '', phone: '', email: '', address: '' });
 
     useEffect(() => {
-        dispatch(fetchCustomers());
-    }, [dispatch]);
+        if (activeBusiness?.id) {
+            dispatch(fetchCustomers(activeBusiness.id));
+        }
+    }, [dispatch, activeBusiness]);
 
     const filteredCustomers = customers.filter(c =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +48,7 @@ const Customers = () => {
                 await dispatch(updateCustomer(currentCustomer)).unwrap();
                 toast.success('Customer updated!');
             } else {
-                await dispatch(addCustomer(currentCustomer)).unwrap();
+                await dispatch(addCustomer({ ...currentCustomer, businessId: activeBusiness.id })).unwrap();
                 toast.success('Customer added!');
             }
             handleCloseModal();
@@ -141,6 +144,22 @@ const Customers = () => {
                     </table>
                 </div>
             </div>
+
+            {/* No Active Business Overlay */}
+            {!activeBusiness && (
+                <div className="fixed inset-0 z-[60] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+                        <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Plus className="text-indigo-600 rotate-45" size={32} />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No Business Selected</h2>
+                        <p className="text-gray-500 mb-6">You need to select a business profile before managing customers.</p>
+                        <a href="/businesses" className="block w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
+                            Go to My Businesses
+                        </a>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (

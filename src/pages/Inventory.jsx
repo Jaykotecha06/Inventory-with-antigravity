@@ -9,6 +9,7 @@ const Inventory = () => {
     const { products } = useSelector(state => state);
     const { logs } = useSelector(state => state.inventory);
     const { user } = useSelector(state => state.auth);
+    const { activeBusiness } = useSelector(state => state.business);
 
     const [modalType, setModalType] = useState(null); // 'IN' or 'OUT'
     const [formData, setFormData] = useState({ productId: '', quantity: '', reason: '' });
@@ -24,7 +25,8 @@ const Inventory = () => {
                 ...formData,
                 type: modalType,
                 user: user.name || user.email,
-                quantity: Number(formData.quantity)
+                quantity: Number(formData.quantity),
+                businessId: activeBusiness.id
             })).unwrap();
             toast.success(`Stock ${modalType === 'IN' ? 'added' : 'removed'} successfully`);
             setModalType(null);
@@ -91,6 +93,22 @@ const Inventory = () => {
                     </table>
                 </div>
             </div>
+
+            {/* No Active Business Overlay */}
+            {!activeBusiness && (
+                <div className="fixed inset-0 z-[60] bg-gray-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+                        <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <ArrowUpCircle className="text-indigo-600" size={32} />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No Business Selected</h2>
+                        <p className="text-gray-500 mb-6">You need to select a business profile before tracking stock movements.</p>
+                        <a href="/businesses" className="block w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
+                            Go to My Businesses
+                        </a>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
             {modalType && (

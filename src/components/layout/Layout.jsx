@@ -6,20 +6,29 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../../redux/slices/productSlice';
 import { fetchInventoryLogs } from '../../redux/slices/inventorySlice';
 import { fetchSales } from '../../redux/slices/salesSlice';
+import { fetchBusinesses } from '../../redux/slices/businessSlice';
+import { fetchCustomers } from '../../redux/slices/customerSlice';
 
 const Layout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const dispatch = useDispatch();
     const { isAuthenticated, user } = useSelector(state => state.auth);
+    const { activeBusiness } = useSelector(state => state.business);
 
     useEffect(() => {
-        // Only fetch business data once we are confirmed authenticated and have a user profile (role etc)
         if (isAuthenticated && user?.uid) {
-            dispatch(fetchProducts());
-            dispatch(fetchInventoryLogs());
-            dispatch(fetchSales());
+            dispatch(fetchBusinesses(user.uid));
         }
     }, [dispatch, isAuthenticated, user]);
+
+    useEffect(() => {
+        if (isAuthenticated && activeBusiness?.id) {
+            dispatch(fetchProducts(activeBusiness.id));
+            dispatch(fetchInventoryLogs(activeBusiness.id));
+            dispatch(fetchSales(activeBusiness.id));
+            dispatch(fetchCustomers(activeBusiness.id));
+        }
+    }, [dispatch, isAuthenticated, activeBusiness]);
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);

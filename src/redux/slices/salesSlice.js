@@ -2,13 +2,15 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ref, get, push, child, set } from 'firebase/database';
 import { db } from '../../services/firebase';
 
-export const fetchSales = createAsyncThunk('sales/fetchSales', async (_, { rejectWithValue }) => {
+export const fetchSales = createAsyncThunk('sales/fetchSales', async (businessId, { rejectWithValue }) => {
     try {
         const salesRef = ref(db, 'sales');
         const snapshot = await get(salesRef);
         if (snapshot.exists()) {
             const data = snapshot.val();
-            return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+            return Object.keys(data)
+                .map(key => ({ id: key, ...data[key] }))
+                .filter(sale => sale.businessId === businessId);
         }
         return [];
     } catch (error) {

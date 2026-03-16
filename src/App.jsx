@@ -19,6 +19,7 @@ import Customers from './pages/Customers';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
+import Businesses from './pages/Businesses';
 
 function App() {
   const dispatch = useDispatch();
@@ -79,6 +80,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="sales" element={<Sales />} />
+          <Route path="businesses" element={<Businesses />} />
 
           <Route path="customers" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Customers /></AuthRoute>} />
           <Route path="reports" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Reports /></AuthRoute>} />

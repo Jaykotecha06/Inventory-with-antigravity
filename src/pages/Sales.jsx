@@ -5,10 +5,13 @@ import CreateInvoice from './CreateInvoice';
 
 const Sales = () => {
     const { items: sales } = useSelector(state => state.sales);
+    const { activeBusiness } = useSelector(state => state.business);
     const [searchTerm, setSearchTerm] = useState('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    const sortedSales = [...sales].sort((a, b) => b.createdAt - a.createdAt);
+    // Filter sales by active business and search term
+    const businessSales = sales.filter(s => s.businessId === activeBusiness?.id);
+    const sortedSales = [...businessSales].sort((a, b) => b.createdAt - a.createdAt);
     const filteredSales = sortedSales.filter(s =>
         s.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -19,12 +22,13 @@ const Sales = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 relative min-h-[400px]">
             <div className="flex justify-between items-center sm:flex-row flex-col gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">Sales Invoices</h1>
                 <button
+                    disabled={!activeBusiness}
                     onClick={() => setIsCreateOpen(true)}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow-sm transition"
+                    className={`flex items-center px-4 py-2 text-white rounded-md shadow-sm transition ${!activeBusiness ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
                     <Plus size={18} className="mr-2" /> Create Invoice
                 </button>
@@ -38,6 +42,7 @@ const Sales = () => {
                         </div>
                         <input
                             type="text"
+                            disabled={!activeBusiness}
                             className="block w-full pl-10 pr-3 py-2 border border-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             placeholder="Search by invoice # or customer..."
                             value={searchTerm}
@@ -85,10 +90,10 @@ const Sales = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {filteredSales.length === 0 && (
+                            {filteredSales.length === 0 && activeBusiness && (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                                        No sales records found.
+                                        No sales records found for this business.
                                     </td>
                                 </tr>
                             )}
@@ -96,6 +101,22 @@ const Sales = () => {
                     </table>
                 </div>
             </div>
+
+            {/* No Active Business Overlay */}
+            {!activeBusiness && (
+                <div className="absolute inset-0 z-10 bg-gray-50/50 backdrop-blur-[2px] flex items-center justify-center p-4 rounded-xl">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-xl border border-gray-100">
+                        <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Plus className="text-indigo-600" size={32} />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">No Business Selected</h2>
+                        <p className="text-gray-500 mb-6">Select a business profile to view its sales history and create new invoices.</p>
+                        <a href="/businesses" className="block w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg">
+                            Go to My Businesses
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
