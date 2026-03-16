@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBusinesses, createBusiness, updateBusinessSlice, deleteBusinessSlice, setActiveBusiness } from '../redux/slices/businessSlice';
-import { Plus, Edit2, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2, Search, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Businesses = () => {
@@ -20,11 +20,75 @@ const Businesses = () => {
         gstin: ''
     });
 
+    // Pagination & Filter States
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [dateFilter, setDateFilter] = useState('all');
+    const [customDateRange, setCustomDateRange] = useState({ from: '', to: '' });
+
+    // Reset pagination on search, filter, or itemsPerPage change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, dateFilter, customDateRange, itemsPerPage]);
+
     useEffect(() => {
         if (user?.uid) {
             dispatch(fetchBusinesses(user.uid));
         }
     }, [dispatch, user]);
+
+    const getFilteredBusinesses = () => {
+        let result = businesses;
+
+        if (searchTerm) {
+            result = result.filter(b =>
+                b.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                b.address?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        if (dateFilter !== 'all') {
+            result = result.filter(b => {
+                const bDate = b.createdAt;
+                if (!bDate) return dateFilter === 'all';
+
+                switch (dateFilter) {
+                    case 'today':
+                        return bDate >= todayStart;
+                    case 'yesterday':
+                        return bDate >= (todayStart - 86400000) && bDate < todayStart;
+                    case 'this_week':
+                        const weekStart = todayStart - now.getDay() * 86400000;
+                        return bDate >= weekStart;
+                    case 'this_month':
+                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                        return bDate >= monthStart;
+                    case 'last_month':
+                        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+                        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).getTime() + 86399999;
+                        return bDate >= lastMonthStart && bDate <= lastMonthEnd;
+                    case 'custom':
+                        if (customDateRange.from && customDateRange.to) {
+                            const from = new Date(customDateRange.from).getTime();
+                            const to = new Date(customDateRange.to).getTime() + 86399999;
+                            return bDate >= from && bDate <= to;
+                        }
+                        return true;
+                    default:
+                        return true;
+                }
+            });
+        }
+        return [...result].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    };
+
+    const finalFiltered = getFilteredBusinesses();
+    const totalPages = Math.ceil(finalFiltered.length / itemsPerPage);
+    const paginatedBusinesses = finalFiltered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handleOpenModal = (business = null) => {
         if (business) {
@@ -82,88 +146,151 @@ const Businesses = () => {
     };
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Manage Businesses</h1>
-                    <p className="text-gray-500 mt-1">Create and switch between your multiple business profiles.</p>
+                    <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Manage Businesses</h1>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-lg active:scale-95 font-bold"
+                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow-sm transition-all active:scale-95 font-bold"
                 >
-                    <Plus size={20} /> Add New Business
+                    <Plus size={18} className="mr-2" /> Add Business
                 </button>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <div className="relative w-full max-w-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="Search by name or address..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        {dateFilter === 'custom' && (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    className="border border-gray-300 px-3 py-1.5 rounded-md text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
+                                    value={customDateRange.from}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, from: e.target.value })}
+                                />
+                                <span className="text-gray-400 text-xs">to</span>
+                                <input
+                                    type="date"
+                                    className="border border-gray-300 px-3 py-1.5 rounded-md text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
+                                    value={customDateRange.to}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, to: e.target.value })}
+                                />
+                            </div>
+                        )}
+                        <div className="relative">
+                            <select
+                                className="bg-white border border-gray-300 px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider text-gray-700 outline-none focus:ring-1 focus:ring-indigo-500 appearance-none pr-8"
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                            >
+                                <option value="all">All Records</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <Filter size={14} className="text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="overflow-x-auto hidden md:block">
                     <table className="min-w-full divide-y divide-gray-100">
                         <thead className="bg-gray-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Business Information</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Industry</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Contact Details</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Action</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Sr No</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Business Information</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Industry</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contact Details</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {businesses.map((business) => (
+                        <tbody className="bg-white divide-y divide-gray-100">
+                            {paginatedBusinesses.map((business, index) => (
                                 <tr
                                     key={business.id}
-                                    className={`group hover:bg-indigo-50/30 transition-colors cursor-pointer ${activeBusiness?.id === business.id ? 'bg-indigo-50/50' : ''}`}
+                                    className={`group hover:bg-gray-50/80 transition-all cursor-pointer ${activeBusiness?.id === business.id ? 'bg-indigo-50/30' : ''}`}
                                     onClick={() => handleSelectBusiness(business)}
                                 >
+                                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-400 font-mono font-medium">
+                                        {String(((currentPage - 1) * itemsPerPage) + index + 1).padStart(2, '0')}
+                                    </td>
                                     <td className="px-6 py-5 whitespace-nowrap">
                                         <div className="flex items-center gap-4">
-                                            <div className={`p-3 rounded-2xl ${activeBusiness?.id === business.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'bg-gray-100 text-gray-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'} transition-all`}>
-                                                <Building2 size={24} />
+                                            <div className={`p-3 rounded-2xl ${activeBusiness?.id === business.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-100 text-indigo-500 shadow-sm group-hover:border-indigo-200'} transition-all duration-300`}>
+                                                <Building2 size={20} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-gray-900 uppercase tracking-tight">{business.name}</p>
-                                                <p className="text-[10px] text-gray-400 font-medium truncate max-w-[200px]">{business.address || 'Global/Online'}</p>
+                                                <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{business.name}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium truncate max-w-[180px] mt-0.5 flex items-center gap-1">
+                                                    <MapPin size={10} /> {business.address || 'Location Hidden'}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 whitespace-nowrap">
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-white border border-gray-100 text-gray-500 uppercase tracking-widest shadow-sm">
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-indigo-50 text-indigo-700 uppercase tracking-widest border border-indigo-100/50">
                                             {business.category}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 whitespace-nowrap">
-                                        <div className="space-y-1">
+                                        <div className="space-y-1.5">
                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                <Phone size={12} className="text-gray-300" />
-                                                <span className="font-bold">{business.phone || 'N/A'}</span>
+                                                <div className="p-1 bg-gray-50 rounded-md">
+                                                    <Phone size={10} className="text-gray-400" />
+                                                </div>
+                                                <span className="font-bold tracking-tight">{business.phone || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-1">
-                                                <Mail size={12} className="text-gray-300" />
-                                                <span className="font-medium">{business.email || 'N/A'}</span>
+                                            <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                                                <div className="p-1 bg-gray-50 rounded-md">
+                                                    <Mail size={10} className="text-gray-400" />
+                                                </div>
+                                                <span className="font-medium underline decoration-gray-200 underline-offset-2 tracking-tight">{business.email || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 whitespace-nowrap">
                                         {activeBusiness?.id === business.id ? (
-                                            <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1.5 rounded-xl border border-green-100 w-fit">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                                <span className="text-[10px] font-black uppercase tracking-tighter">Active Workspace</span>
+                                            <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm w-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                                                <span className="text-[10px] font-black uppercase tracking-tighter">Current Workspace</span>
                                             </div>
                                         ) : (
-                                            <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest px-3 py-1.5">Inactive</div>
+                                            <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest px-3 py-1.5">Available</div>
                                         )}
                                     </td>
                                     <td className="px-6 py-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-3">
                                             <button
                                                 onClick={() => handleOpenModal(business)}
-                                                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-indigo-50"
+                                                className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
+                                                title="Edit"
                                             >
-                                                <Edit2 size={16} />
+                                                <Edit size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(business.id)}
-                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-white rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-red-50"
+                                                className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
+                                                title="Delete"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -175,127 +302,227 @@ const Businesses = () => {
                     </table>
                 </div>
 
-                {businesses.length === 0 && !loading && (
-                    <div className="py-24 flex flex-col items-center justify-center text-center">
-                        <div className="bg-indigo-50 p-8 rounded-full mb-6">
-                            <Briefcase size={64} className="text-indigo-200" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">No Business Profiles Found</h3>
-                        <p className="text-gray-400 max-w-sm mx-auto mt-3 font-medium px-4">
-                            Create your first business profile to start managing inventory, products, and sales separately.
-                        </p>
-                        <button
-                            onClick={() => handleOpenModal()}
-                            className="mt-8 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-xl hover:shadow-indigo-100 active:scale-95 flex items-center gap-2"
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y divide-gray-100 animate-in slide-in-from-bottom-4 duration-500">
+                    {paginatedBusinesses.map((business, index) => (
+                        <div
+                            key={business.id}
+                            className={`p-5 active:bg-gray-50 transition-colors ${activeBusiness?.id === business.id ? 'bg-indigo-50/50' : ''}`}
+                            onClick={() => handleSelectBusiness(business)}
                         >
-                            <PlusCircle size={22} /> Create My First Business
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 rounded-2xl ${activeBusiness?.id === business.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-gray-100 text-indigo-400'}`}>
+                                        <Building2 size={24} />
+                                    </div>
+                                    <div>
+                                        <span className="text-[10px] text-gray-400 font-mono mb-1 block">#{String(((currentPage - 1) * itemsPerPage) + index + 1).padStart(2, '0')}</span>
+                                        <h3 className="text-base font-black text-gray-900 uppercase tracking-tight leading-none">{business.name}</h3>
+                                        <span className="inline-block mt-2 px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md text-[9px] font-black uppercase tracking-widest">{business.category}</span>
+                                    </div>
+                                </div>
+                                <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
+                                    <button
+                                        onClick={() => handleOpenModal(business)}
+                                        className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
+                                    >
+                                        <Edit size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(business.id)}
+                                        className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Phone</p>
+                                    <p className="text-xs font-bold text-gray-700">{business.phone || 'Not set'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Location</p>
+                                    <p className="text-xs font-bold text-gray-700 truncate">{business.address || 'Online'}</p>
+                                </div>
+                            </div>
+
+                            {activeBusiness?.id === business.id && (
+                                <div className="mt-4 pt-4 border-t border-indigo-100 flex items-center gap-2 text-indigo-600">
+                                    <CheckCircle2 size={14} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Active Workspace</span>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 0 && (
+                <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            Page {currentPage} of {totalPages || 1}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Show</span>
+                            <select
+                                className="bg-white border border-gray-300 px-2 py-1 rounded text-xs font-bold text-gray-700 outline-none focus:ring-1 focus:ring-indigo-500"
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            className="p-2 border border-gray-300 rounded-md bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+                        <button
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            className="p-2 border border-gray-300 rounded-md bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                        >
+                            <ChevronRight size={16} />
                         </button>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
+
+            {paginatedBusinesses.length === 0 && !loading && (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                    <div className="bg-indigo-50 p-8 rounded-full mb-6">
+                        <Briefcase size={64} className="text-indigo-200" />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">No Business Profiles Found</h3>
+                    <p className="text-gray-400 max-w-sm mx-auto mt-3 font-medium px-4">
+                        Create your first business profile to start managing inventory, products, and sales separately.
+                    </p>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="mt-8 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                    >
+                        <PlusCircle size={22} /> Create My First Business
+                    </button>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in duration-300 border border-gray-100">
-                        <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative border border-gray-100 animate-in zoom-in duration-300">
+                        <div className="flex justify-between items-center p-6 border-b bg-gray-50/50">
                             <div>
-                                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">
-                                    {isEditMode ? 'Edit Business Details' : 'Register New Business'}
-                                </h2>
-                                <p className="text-gray-500 text-sm font-medium">Enter the official information for your business.</p>
+                                <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">
+                                    {isEditMode ? 'Edit Business' : 'New Business'}
+                                </h3>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Profile Settings</p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="bg-white p-2 rounded-full shadow-sm text-gray-400 hover:text-gray-900 transition-all border border-gray-100 hover:border-gray-200">
-                                <Plus size={24} className="rotate-45" />
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="col-span-1 md:col-span-2">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">Business Name *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        placeholder="e.g., Apple Store, Local Grocery"
-                                    />
-                                </div>
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto hide-scrollbar">
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Business Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold placeholder:text-gray-300"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="e.g., Apple Store"
+                                />
+                            </div>
 
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">Industry Category</label>
-                                    <select
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold appearance-none cursor-pointer"
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    >
-                                        <option value="Retail">Retail Shop</option>
-                                        <option value="Wholesale">Wholesale Trading</option>
-                                        <option value="Manufacturer">Manufacturing</option>
-                                        <option value="Service">Professional Service</option>
-                                        <option value="Restaurant">Food & Restaurant</option>
-                                    </select>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Industry</label>
+                                    <div className="relative">
+                                        <select
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold appearance-none cursor-pointer"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        >
+                                            <option value="Retail">Retail</option>
+                                            <option value="Wholesale">Wholesale</option>
+                                            <option value="Manufacturer">Manufacturer</option>
+                                            <option value="Service">Service</option>
+                                            <option value="Restaurant">Food</option>
+                                        </select>
+                                        <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
+                                    </div>
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">Contact Number</label>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Phone</label>
                                     <input
                                         type="tel"
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold placeholder:text-gray-300"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="+91 XXXXX XXXXX"
-                                    />
-                                </div>
-
-                                <div className="col-span-1 md:col-span-2">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">Complete Office Address</label>
-                                    <textarea
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold h-24 resize-none"
-                                        value={formData.address}
-                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                        placeholder="Street, City, State, ZIP..."
-                                    ></textarea>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">Business Email</label>
-                                    <input
-                                        type="email"
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold"
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="shop@example.com"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2 ml-1 uppercase tracking-widest text-[10px]">GSTIN (Tax ID)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-semibold uppercase"
-                                        value={formData.gstin}
-                                        onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                                        placeholder="22AAAAA0000A1Z5"
+                                        placeholder="+91..."
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-4">
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Full Address</label>
+                                <textarea
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold h-20 resize-none placeholder:text-gray-300"
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    placeholder="Street details..."
+                                ></textarea>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Email</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold placeholder:text-gray-300"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        placeholder="mail@..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">GSTIN</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold placeholder:text-gray-300 uppercase"
+                                        value={formData.gstin}
+                                        onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
+                                        placeholder="Optional"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 px-8 py-4 border-2 border-gray-100 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all active:scale-95"
+                                    className="flex-1 py-3.5 border-2 border-gray-100 rounded-xl font-bold text-gray-400 hover:bg-gray-50 transition-all active:scale-95"
                                 >
-                                    Discard
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-3 bg-indigo-600 text-white px-12 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl hover:shadow-indigo-100 active:scale-95"
+                                    className="flex-[2] bg-indigo-600 text-white py-3.5 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95"
                                 >
-                                    {isEditMode ? 'Update Business' : 'Launch Business'}
+                                    {isEditMode ? 'Update' : 'Launch'}
                                 </button>
                             </div>
                         </form>

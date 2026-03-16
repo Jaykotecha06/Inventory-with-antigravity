@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCustomers, addCustomer, updateCustomer, deleteCustomer } from '../redux/slices/customerSlice';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 const Customers = () => {
     const dispatch = useDispatch();
@@ -14,16 +14,74 @@ const Customers = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [currentCustomer, setCurrentCustomer] = useState({ name: '', phone: '', email: '', address: '' });
 
+    // Pagination & Filter States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(5);
+    const [dateFilter, setDateFilter] = useState('all');
+    const [customDateRange, setCustomDateRange] = useState({ from: '', to: '' });
+
+    // Reset pagination on search, filter, or itemsPerPage change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, dateFilter, customDateRange, itemsPerPage]);
+
     useEffect(() => {
         if (activeBusiness?.id) {
             dispatch(fetchCustomers(activeBusiness.id));
         }
     }, [dispatch, activeBusiness]);
 
-    const filteredCustomers = customers.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.phone.includes(searchTerm)
-    );
+    const getFilteredCustomers = () => {
+        let result = customers;
+
+        if (searchTerm) {
+            result = result.filter(c =>
+                c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                c.phone?.includes(searchTerm)
+            );
+        }
+
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        if (dateFilter !== 'all') {
+            result = result.filter(c => {
+                const cDate = c.createdAt;
+                if (!cDate) return dateFilter === 'all';
+
+                switch (dateFilter) {
+                    case 'today':
+                        return cDate >= todayStart;
+                    case 'yesterday':
+                        return cDate >= (todayStart - 86400000) && cDate < todayStart;
+                    case 'this_week':
+                        const weekStart = todayStart - now.getDay() * 86400000;
+                        return cDate >= weekStart;
+                    case 'this_month':
+                        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                        return cDate >= monthStart;
+                    case 'last_month':
+                        const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+                        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).getTime() + 86399999;
+                        return cDate >= lastMonthStart && cDate <= lastMonthEnd;
+                    case 'custom':
+                        if (customDateRange.from && customDateRange.to) {
+                            const from = new Date(customDateRange.from).getTime();
+                            const to = new Date(customDateRange.to).getTime() + 86399999;
+                            return cDate >= from && cDate <= to;
+                        }
+                        return true;
+                    default:
+                        return true;
+                }
+            });
+        }
+        return [...result].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    };
+
+    const finalFiltered = getFilteredCustomers();
+    const totalPages = Math.ceil(finalFiltered.length / itemsPerPage);
+    const paginatedCustomers = finalFiltered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handleOpenModal = (customer = null) => {
         if (customer) {
@@ -80,25 +138,65 @@ const Customers = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+                <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                     <div className="relative w-full max-w-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400" />
                         </div>
                         <input
                             type="text"
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            disabled={!activeBusiness}
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             placeholder="Search by name or phone..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        {dateFilter === 'custom' && (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    className="border border-gray-300 px-3 py-1.5 rounded-md text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
+                                    value={customDateRange.from}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, from: e.target.value })}
+                                />
+                                <span className="text-gray-400 text-xs">to</span>
+                                <input
+                                    type="date"
+                                    className="border border-gray-300 px-3 py-1.5 rounded-md text-xs font-medium outline-none focus:ring-1 focus:ring-indigo-500"
+                                    value={customDateRange.to}
+                                    onChange={(e) => setCustomDateRange({ ...customDateRange, to: e.target.value })}
+                                />
+                            </div>
+                        )}
+                        <div className="relative">
+                            <select
+                                className="bg-white border border-gray-300 px-4 py-2 rounded-md text-xs font-bold uppercase tracking-wider text-gray-700 outline-none focus:ring-1 focus:ring-indigo-500 appearance-none pr-8"
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                            >
+                                <option value="all">All Records</option>
+                                <option value="today">Today</option>
+                                <option value="yesterday">Yesterday</option>
+                                <option value="this_week">This Week</option>
+                                <option value="this_month">This Month</option>
+                                <option value="last_month">Last Month</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <Filter size={14} className="text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-white">
                             <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr No</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
@@ -106,36 +204,41 @@ const Customers = () => {
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredCustomers.length > 0 ? filteredCustomers.map((customer) => (
-                                <tr key={customer.id} className="hover:bg-gray-50 transition">
+                        <tbody className="bg-white divide-y divide-gray-100">
+                            {paginatedCustomers.length > 0 ? paginatedCustomers.map((customer, index) => (
+                                <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">
+                                        {((currentPage - 1) * itemsPerPage) + index + 1}
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
                                                 <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                                                    {customer.name.charAt(0)}
+                                                    {customer.name?.charAt(0)}
                                                 </div>
                                             </div>
                                             <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                                                <div className="text-sm font-bold text-gray-900">{customer.name}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.phone}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{customer.phone}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.email || 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]">{customer.address || 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => handleOpenModal(customer)} className="text-indigo-600 hover:text-indigo-900 mr-4" title="Edit">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:text-red-900" title="Delete">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        <div className="flex justify-end gap-3">
+                                            <button onClick={() => handleOpenModal(customer)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors" title="Edit">
+                                                <Edit size={16} />
+                                            </button>
+                                            <button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-400 italic">
                                         {loading ? 'Loading customers...' : 'No customers found.'}
                                     </td>
                                 </tr>
@@ -143,6 +246,46 @@ const Customers = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 0 && (
+                    <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                Page {currentPage} of {totalPages || 1}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Show</span>
+                                <select
+                                    className="bg-white border border-gray-300 px-2 py-1 rounded text-xs font-bold text-gray-700 outline-none focus:ring-1 focus:ring-indigo-500"
+                                    value={itemsPerPage}
+                                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                >
+                                    <option value={5}>5</option>
+                                    <option value={10}>10</option>
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                className="p-2 border border-gray-300 rounded-md bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <button
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                className="p-2 border border-gray-300 rounded-md bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* No Active Business Overlay */}
@@ -163,34 +306,41 @@ const Customers = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden relative">
-                        <div className="flex justify-between items-center p-4 border-b">
-                            <h3 className="text-lg font-bold">{isEditing ? 'Edit Customer' : 'Add New Customer'}</h3>
-                            <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-700"><X size={20} /></button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-300">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative border border-gray-100 animate-in zoom-in duration-300">
+                        <div className="flex justify-between items-center p-6 border-b bg-gray-50/50">
+                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">{isEditing ? 'Edit Customer' : 'Add New Customer'}</h3>
+                            <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={24} />
+                            </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-4 space-y-4 shadow-lg drop-shadow">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Customer Name</label>
-                                <input required type="text" className="mt-1 block w-full border border-gray-300 rounded-md p-2" value={currentCustomer.name} onChange={e => setCurrentCustomer({ ...currentCustomer, name: e.target.value })} />
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Customer Name *</label>
+                                <input type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentCustomer.name} onChange={(e) => setCurrentCustomer({ ...currentCustomer, name: e.target.value })} />
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input type="tel" className="mt-1 block w-full border border-gray-300 rounded-md p-2" value={currentCustomer.phone} onChange={e => setCurrentCustomer({ ...currentCustomer, phone: e.target.value })} />
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+                                    <input type="tel" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentCustomer.phone} onChange={(e) => setCurrentCustomer({ ...currentCustomer, phone: e.target.value })} />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                                    <input type="email" className="mt-1 block w-full border border-gray-300 rounded-md p-2" value={currentCustomer.email} onChange={e => setCurrentCustomer({ ...currentCustomer, email: e.target.value })} />
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                                    <input type="email" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentCustomer.email} onChange={(e) => setCurrentCustomer({ ...currentCustomer, email: e.target.value })} />
                                 </div>
                             </div>
+
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Address</label>
-                                <textarea rows="3" className="mt-1 block w-full border border-gray-300 rounded-md p-2" value={currentCustomer.address} onChange={e => setCurrentCustomer({ ...currentCustomer, address: e.target.value })}></textarea>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Address</label>
+                                <textarea rows="3" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentCustomer.address} onChange={(e) => setCurrentCustomer({ ...currentCustomer, address: e.target.value })} />
                             </div>
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button type="button" onClick={handleCloseModal} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Cancel</button>
-                                <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Save</button>
+
+                            <div className="pt-4 flex gap-3">
+                                <button type="button" onClick={handleCloseModal} className="flex-1 py-3.5 border-2 border-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">Cancel</button>
+                                <button type="submit" className="flex-2 bg-indigo-600 text-white py-3.5 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
+                                    {isEditing ? 'Update Customer' : 'Add Customer'}
+                                </button>
                             </div>
                         </form>
                     </div>
