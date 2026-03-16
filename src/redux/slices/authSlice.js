@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { ref, get, set } from 'firebase/database';
 import { auth, db } from '../../services/firebase';
 
@@ -28,6 +28,15 @@ export const logoutUser = createAsyncThunk('auth/logout', async (_, { rejectWith
     try {
         await signOut(auth);
         return null;
+    } catch (error) {
+        return rejectWithValue(error.message);
+    }
+});
+
+export const forgotPassword = createAsyncThunk('auth/forgotPassword', async (email, { rejectWithValue }) => {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        return true;
     } catch (error) {
         return rejectWithValue(error.message);
     }

@@ -3,11 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { signupUser } from '../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [name, setName] = useState('');
     const [role, setRole] = useState('Staff');
     const dispatch = useDispatch();
@@ -28,7 +29,14 @@ const Signup = () => {
                 toast.success('Account created successfully');
                 navigate('/');
             } else {
-                toast.error(resultAction.payload || 'Failed to sign up');
+                const errorMsg = resultAction.payload;
+                if (errorMsg?.includes('auth/email-already-in-use')) {
+                    toast.error('This email is already registered. Please Login instead.');
+                } else if (errorMsg?.includes('auth/weak-password')) {
+                    toast.error('Password is too weak. Please use at least 6 characters.');
+                } else {
+                    toast.error(errorMsg || 'Failed to sign up');
+                }
             }
         } catch (err) {
             toast.error('An error occurred');
@@ -67,14 +75,23 @@ const Signup = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            type="password"
-                            required
-                            minLength="6"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
+                        <div className="mt-1 relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                minLength="6"
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 pr-10"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
                     </div>
                     {/* New Role Select Field */}
                     <div>

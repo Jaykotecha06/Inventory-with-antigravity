@@ -18,6 +18,7 @@ import Sales from './pages/Sales';
 import Customers from './pages/Customers';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
 
 function App() {
   const dispatch = useDispatch();
@@ -71,6 +72,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Layout /></AuthRoute>}>
           <Route index element={<Dashboard />} />

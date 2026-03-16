@@ -3,11 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { LogIn } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, isAuthenticated } = useSelector((state) => state.auth);
@@ -26,7 +27,12 @@ const Login = () => {
                 toast.success('Logged in successfully');
                 navigate('/');
             } else {
-                toast.error(resultAction.payload || 'Failed to login');
+                const errorMsg = resultAction.payload;
+                if (errorMsg?.includes('auth/invalid-credential') || errorMsg?.includes('auth/user-not-found') || errorMsg?.includes('auth/wrong-password')) {
+                    toast.error('Invalid email or password. Please check your credentials.');
+                } else {
+                    toast.error(errorMsg || 'Failed to login');
+                }
             }
         } catch (err) {
             toast.error('An error occurred');
@@ -55,13 +61,27 @@ const Login = () => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <input
-                            type="password"
-                            required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
+                        <div className="mt-1 relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                required
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 pr-10"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex justify-end">
+                        <Link to="/forgot-password" size="sm" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                            Forgot Password?
+                        </Link>
                     </div>
                     <button
                         type="submit"
