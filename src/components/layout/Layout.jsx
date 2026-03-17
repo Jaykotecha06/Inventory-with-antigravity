@@ -8,6 +8,8 @@ import { fetchInventoryLogs } from '../../redux/slices/inventorySlice';
 import { fetchSales } from '../../redux/slices/salesSlice';
 import { fetchBusinesses } from '../../redux/slices/businessSlice';
 import { fetchCustomers } from '../../redux/slices/customerSlice';
+import { fetchPurchases } from '../../redux/slices/purchaseSlice';
+import { fetchQuotations } from '../../redux/slices/quotationSlice';
 
 const Layout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,6 +29,8 @@ const Layout = () => {
             dispatch(fetchInventoryLogs(activeBusiness.id));
             dispatch(fetchSales(activeBusiness.id));
             dispatch(fetchCustomers(activeBusiness.id));
+            dispatch(fetchPurchases(activeBusiness.id));
+            dispatch(fetchQuotations(activeBusiness.id));
         }
     }, [dispatch, isAuthenticated, activeBusiness]);
 
@@ -46,7 +50,7 @@ const Layout = () => {
                 ></div>
             )}
 
-            <div className="flex flex-col flex-1 w-full relative">
+            <div className="flex flex-col flex-1 min-w-0 relative">
                 <Header onMenuClick={toggleSidebar} />
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-gray-50">
                     {/* Ensure we have user data before rendering the dashboard content to prevent calculation crashes */}

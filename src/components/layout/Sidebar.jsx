@@ -9,7 +9,9 @@ import {
     Settings,
     LogOut,
     Archive,
-    Building2
+    Building2,
+    ClipboardList,
+    FileSpreadsheet
 } from 'lucide-react';
 import { logoutUser } from '../../redux/slices/authSlice';
 
@@ -28,7 +30,9 @@ const Sidebar = () => {
         { path: '/products', icon: <Package size={20} />, label: 'Products', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/customers', icon: <Users size={20} />, label: 'Customers', roles: ['Admin', 'Manager'] },
         { path: '/inventory', icon: <Archive size={20} />, label: 'Inventory', roles: ['Admin', 'Manager', 'Staff'] },
+        { path: '/purchases', icon: <ClipboardList size={20} />, label: 'Purchases', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales', roles: ['Admin', 'Manager', 'Staff'] },
+        { path: '/quotations', icon: <FileSpreadsheet size={20} />, label: 'Quotations', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/reports', icon: <FileText size={20} />, label: 'Reports', roles: ['Admin', 'Manager'] },
         { path: '/settings', icon: <Settings size={20} />, label: 'Settings', roles: ['Admin'] },
     ];

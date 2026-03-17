@@ -12,7 +12,7 @@ const Customers = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [currentCustomer, setCurrentCustomer] = useState({ name: '', phone: '', email: '', address: '' });
+    const [currentCustomer, setCurrentCustomer] = useState({ name: '', phone: '', email: '', address: '', type: 'Customer' });
 
     // Pagination & Filter States
     const [currentPage, setCurrentPage] = useState(1);
@@ -88,7 +88,7 @@ const Customers = () => {
             setCurrentCustomer(customer);
             setIsEditing(true);
         } else {
-            setCurrentCustomer({ name: '', phone: '', email: '', address: '' });
+            setCurrentCustomer({ name: '', phone: '', email: '', address: '', type: 'Customer' });
             setIsEditing(false);
         }
         setIsModalOpen(true);
@@ -96,7 +96,7 @@ const Customers = () => {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setCurrentCustomer({ name: '', phone: '', email: '', address: '' });
+        setCurrentCustomer({ name: '', phone: '', email: '', address: '', type: 'Customer' });
     };
 
     const handleSubmit = async (e) => {
@@ -198,6 +198,7 @@ const Customers = () => {
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr No</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
@@ -213,7 +214,7 @@ const Customers = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="flex-shrink-0 h-10 w-10">
-                                                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold ${customer.type === 'Supplier' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600'}`}>
                                                     {customer.name?.charAt(0)}
                                                 </div>
                                             </div>
@@ -221,6 +222,11 @@ const Customers = () => {
                                                 <div className="text-sm font-bold text-gray-900">{customer.name}</div>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2.5 py-0.5 text-[10px] font-black rounded-full uppercase tracking-widest ${customer.type === 'Supplier' ? 'bg-orange-100 text-orange-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                                            {customer.type || 'Customer'}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{customer.phone}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.email || 'N/A'}</td>
@@ -238,7 +244,7 @@ const Customers = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-400 italic">
+                                    <td colSpan="7" className="px-6 py-12 text-center text-gray-400 italic">
                                         {loading ? 'Loading customers...' : 'No customers found.'}
                                     </td>
                                 </tr>
@@ -316,7 +322,26 @@ const Customers = () => {
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Customer Name *</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Type *</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {['Customer', 'Supplier'].map(t => (
+                                        <button
+                                            key={t}
+                                            type="button"
+                                            onClick={() => setCurrentCustomer({ ...currentCustomer, type: t })}
+                                            className={`py-3 rounded-xl font-black uppercase tracking-widest text-xs border-2 transition-all ${currentCustomer.type === t
+                                                    ? t === 'Supplier' ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100' : 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100'
+                                                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">{currentCustomer.type === 'Supplier' ? 'Supplier' : 'Customer'} Name *</label>
                                 <input type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentCustomer.name} onChange={(e) => setCurrentCustomer({ ...currentCustomer, name: e.target.value })} />
                             </div>
 
