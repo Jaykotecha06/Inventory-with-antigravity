@@ -17,7 +17,8 @@ const Businesses = () => {
         address: '',
         phone: '',
         email: '',
-        gstin: ''
+        gstin: '',
+        upiId: ''
     });
 
     // Pagination & Filter States
@@ -98,12 +99,13 @@ const Businesses = () => {
                 address: business.address || '',
                 phone: business.phone || '',
                 email: business.email || '',
-                gstin: business.gstin || ''
+                gstin: business.gstin || '',
+                upiId: business.upiId || ''
             });
             setCurrentBusinessId(business.id);
             setIsEditMode(true);
         } else {
-            setFormData({ name: '', category: 'Retail', address: '', phone: '', email: '', gstin: '' });
+            setFormData({ name: '', category: 'Retail', address: '', phone: '', email: '', gstin: '', upiId: '' });
             setIsEditMode(false);
         }
         setIsModalOpen(true);
@@ -457,10 +459,10 @@ const Businesses = () => {
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         >
                                             <option value="Retail">Retail</option>
+                                            <option value="Semi Wholesaller">Semi Wholesaller</option>
                                             <option value="Wholesale">Wholesale</option>
-                                            <option value="Manufacturer">Manufacturer</option>
-                                            <option value="Service">Service</option>
-                                            <option value="Restaurant">Food</option>
+
+
                                         </select>
                                         <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
                                     </div>
@@ -508,6 +510,17 @@ const Businesses = () => {
                                         placeholder="Optional"
                                     />
                                 </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">UPI ID (for Payments)</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold placeholder:text-gray-300"
+                                    value={formData.upiId}
+                                    onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
+                                    placeholder="e.g. name@upi"
+                                />
                             </div>
 
                             <div className="pt-4 flex gap-3">
