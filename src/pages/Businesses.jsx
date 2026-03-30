@@ -319,8 +319,8 @@ const Businesses = () => {
                                     </td>
                                     <td className="px-6 py-5 whitespace-nowrap">
                                         {activeBusiness?.id === business.id ? (
-                                            <div className="flex items-center gap-2 text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-100 shadow-sm w-fit">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                                            <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 shadow-sm w-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
                                                 <span className="text-[10px] font-black uppercase tracking-tighter">Current Workspace</span>
                                             </div>
                                         ) : (
@@ -398,9 +398,9 @@ const Businesses = () => {
                             </div>
 
                             {activeBusiness?.id === business.id && (
-                                <div className="mt-4 pt-4 border-t border-indigo-100 flex items-center gap-2 text-indigo-600">
-                                    <CheckCircle2 size={14} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Active Workspace</span>
+                                <div className="mt-4 pt-4 border-t border-indigo-100 flex items-center gap-2 text-green-600">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)] border border-green-200"></div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-green-700">Active Workspace</span>
                                 </div>
                             )}
                         </div>

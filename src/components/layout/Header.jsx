@@ -18,19 +18,12 @@ const Header = ({ onMenuClick }) => {
 
                     {/* Business Selector Dropdown */}
                     <div className="relative group ml-4 md:ml-0">
-                        <div className="flex items-center gap-3 bg-surface border border-outline-variant/30 px-4 py-2.5 rounded-2xl cursor-pointer hover:bg-surface-container-low hover:border-forest-green/30 transition-all duration-300">
-                            <div className="bg-forest-green p-2 rounded-xl text-white hidden sm:block shadow-md shadow-forest-green/20">
-                                <Building2 size={18} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] text-on-surface-variant font-black uppercase tracking-widest leading-none mb-1">Company Profile</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-black text-on-surface truncate max-w-[140px] uppercase tracking-tight">
-                                        {activeBusiness?.name || "Select Business"}
-                                    </span>
-                                    <ChevronDown size={14} className="text-forest-green group-hover:translate-y-0.5 transition-transform" />
-                                </div>
-                            </div>
+                        <div className="flex items-center gap-2.5 bg-white border border-gray-200 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
+                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${activeBusiness ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-gray-300'}`}></div>
+                            <span className="text-xs font-black tracking-tight text-gray-700 truncate max-w-[140px] uppercase mt-0.5">
+                                {activeBusiness?.name || "Select Workspace"}
+                            </span>
+                            <ChevronDown size={14} className="text-gray-400 group-hover:text-gray-600 transition-colors mt-0.5" />
                         </div>
 
                         {/* Dropdown menu */}
@@ -45,19 +38,19 @@ const Header = ({ onMenuClick }) => {
                                         <button
                                             key={b.id}
                                             onClick={() => dispatch(setActiveBusiness(b))}
-                                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 ${activeBusiness?.id === b.id ? 'bg-forest-green text-white shadow-lg shadow-forest-green/20' : 'hover:bg-surface-container-low text-on-surface-variant hover:translate-x-1'}`}
+                                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 text-on-surface-variant hover:bg-surface-container-low hover:translate-x-1 ${activeBusiness?.id === b.id ? 'bg-green-50/50 border border-green-100 shadow-sm' : ''}`}
                                         >
-                                            <div className={`p-2 rounded-xl ${activeBusiness?.id === b.id ? 'bg-white/20' : 'bg-forest-green/5 text-forest-green'}`}>
+                                            <div className="p-2 rounded-xl bg-forest-green/5 text-forest-green">
                                                 <Building2 size={16} />
                                             </div>
                                             <div className="flex flex-col overflow-hidden">
-                                                <span className="text-sm font-bold truncate uppercase tracking-tight">{b.name}</span>
-                                                <span className={`text-[10px] truncate font-medium ${activeBusiness?.id === b.id ? 'text-white/70' : 'text-on-surface-variant/70'}`}>
+                                                <span className={`text-sm font-bold truncate uppercase tracking-tight ${activeBusiness?.id === b.id ? 'text-green-800' : ''}`}>{b.name}</span>
+                                                <span className="text-[10px] truncate font-medium text-on-surface-variant/70">
                                                     {b.category} • {b.address || 'Global'}
                                                 </span>
                                             </div>
                                             {activeBusiness?.id === b.id && (
-                                                <div className="ml-auto bg-white/30 h-1.5 w-1.5 rounded-full animate-ping"></div>
+                                                <div className="ml-auto bg-green-500 h-2 w-2 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)] border border-green-200"></div>
                                             )}
                                         </button>
                                     ))}

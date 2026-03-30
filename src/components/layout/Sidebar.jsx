@@ -68,17 +68,28 @@ const Sidebar = ({ isOpen, onClose }) => {
             )}
 
             <aside className={sidebarClasses}>
-                <div className="p-6 border-b border-white/10 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                            <span className="material-symbols-outlined text-forest-green" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-                            Vyapar Ledger
-                        </h1>
-                        <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Workspace • {effectiveRole}</p>
+                <div className="p-6 border-b border-white/10 flex items-start justify-between">
+                    <div className="w-full flex pr-2 flex-col">
+                        <div className="flex justify-between items-center w-full">
+                            <div>
+                                <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-forest-green" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                                    Vyapar Ledger
+                                </h1>
+                                <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold mb-4">Workspace • {effectiveRole}</p>
+                            </div>
+                            <button onClick={onClose} className="md:hidden text-white/70 hover:text-white mb-auto ml-2">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10 w-full mt-1">
+                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${activeBusiness ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></div>
+                            <span className="text-xs text-white/90 font-bold truncate">
+                                {activeBusiness?.name || 'No Business Selected'}
+                            </span>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="md:hidden text-white/70 hover:text-white">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
