@@ -22,6 +22,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Businesses from './pages/Businesses';
 import Purchases from './pages/Purchases';
 import Quotations from './pages/Quotations';
+import Team from './pages/Team';
 
 function App() {
   const dispatch = useDispatch();
@@ -87,6 +88,7 @@ function App() {
           <Route path="businesses" element={<Businesses />} />
           <Route path="purchases" element={<Purchases />} />
           <Route path="quotations" element={<Quotations />} />
+          <Route path="team" element={<AuthRoute allowedRoles={['Admin']}><Team /></AuthRoute>} />
 
           <Route path="reports" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Reports /></AuthRoute>} />
           <Route path="settings" element={<AuthRoute allowedRoles={['Admin']}><Settings /></AuthRoute>} />

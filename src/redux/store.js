@@ -8,6 +8,7 @@ import userReducer from './slices/userSlice';
 import businessReducer from './slices/businessSlice';
 import purchaseReducer from './slices/purchaseSlice';
 import quotationReducer from './slices/quotationSlice';
+import teamReducer from './slices/teamSlice';
 
 export const store = configureStore({
     reducer: {
@@ -20,5 +21,6 @@ export const store = configureStore({
         business: businessReducer,
         purchases: purchaseReducer,
         quotations: quotationReducer,
+        team: teamReducer,
     },
 });

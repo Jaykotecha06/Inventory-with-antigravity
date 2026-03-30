@@ -9,10 +9,10 @@ export const fetchBusinesses = createAsyncThunk('business/fetchBusinesses', asyn
         const snapshot = await get(businessesRef);
         if (snapshot.exists()) {
             const data = snapshot.val();
-            // Filter businesses by ownerId
+            // Filter businesses by ownerId OR if userId is in the business's users list
             return Object.keys(data)
                 .map(key => ({ id: key, ...data[key] }))
-                .filter(b => b.ownerId === userId);
+                .filter(b => b.ownerId === userId || (b.users && b.users[userId]));
         }
         return [];
     } catch (error) {

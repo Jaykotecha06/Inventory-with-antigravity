@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBusinesses, createBusiness, updateBusinessSlice, deleteBusinessSlice, setActiveBusiness } from '../redux/slices/businessSlice';
-import { Plus, Edit, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2, Search, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { fetchUserInvitations, acceptInvitation } from '../redux/slices/teamSlice';
+import { Plus, Edit, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2, Search, Filter, ChevronLeft, ChevronRight, X, UserPlus, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Businesses = () => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.auth);
     const { items: businesses, loading, activeBusiness } = useSelector(state => state.business);
+    const { userPendingInvitations } = useSelector(state => state.team);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentBusinessId, setCurrentBusinessId] = useState(null);
@@ -37,7 +39,26 @@ const Businesses = () => {
         if (user?.uid) {
             dispatch(fetchBusinesses(user.uid));
         }
+        if (user?.email) {
+            dispatch(fetchUserInvitations(user.email));
+        }
     }, [dispatch, user]);
+
+    const handleAcceptInvite = async (invite) => {
+        try {
+            await dispatch(acceptInvitation({
+                invitationId: invite.id,
+                businessId: invite.businessId,
+                userId: user.uid,
+                email: user.email,
+                role: invite.role
+            })).unwrap();
+            toast.success(`Joined ${invite.businessName} as ${invite.role}!`);
+            dispatch(fetchBusinesses(user.uid));
+        } catch (error) {
+            toast.error('Failed to accept invitation');
+        }
+    };
 
     const getFilteredBusinesses = () => {
         let result = businesses;
@@ -160,6 +181,32 @@ const Businesses = () => {
                     <Plus size={18} className="mr-2" /> Add Business
                 </button>
             </div>
+
+            {userPendingInvitations?.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden mb-8">
+                    <div className="p-4 border-b border-indigo-50 bg-indigo-50/50">
+                        <h2 className="text-lg font-bold text-indigo-900 flex items-center">
+                            <UserPlus size={18} className="mr-2 text-indigo-600" /> Pending Invitations
+                        </h2>
+                    </div>
+                    <div className="divide-y divide-gray-100">
+                        {userPendingInvitations.map(invite => (
+                            <div key={invite.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 className="text-sm font-bold text-gray-900">You've been invited to join <span className="text-indigo-600">{invite.businessName}</span></h3>
+                                    <p className="text-xs text-gray-500 mt-1">Role assigned: <span className="font-bold text-gray-700">{invite.role}</span></p>
+                                </div>
+                                <button
+                                    onClick={() => handleAcceptInvite(invite)}
+                                    className="flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition"
+                                >
+                                    <Check size={16} className="mr-1.5" /> Accept Invitation
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">

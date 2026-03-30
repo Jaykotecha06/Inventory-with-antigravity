@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 
 const AuthRoute = ({ children, allowedRoles }) => {
     const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
+    const { activeBusiness } = useSelector((state) => state.business);
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -12,8 +13,17 @@ const AuthRoute = ({ children, allowedRoles }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(user?.role)) {
-        return <Navigate to="/" replace />; // Or to a 'Not Authorized' page
+    let effectiveRole = user?.role;
+    if (activeBusiness && user) {
+        if (activeBusiness.ownerId === user.uid) {
+            effectiveRole = 'Admin';
+        } else if (activeBusiness.users && activeBusiness.users[user.uid]) {
+            effectiveRole = activeBusiness.users[user.uid].role;
+        }
+    }
+
+    if (allowedRoles && !allowedRoles.includes(effectiveRole)) {
+        return <Navigate to="/" replace />; // Redirect to dashboard if not authorized
     }
 
     return children;

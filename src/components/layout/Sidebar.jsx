@@ -18,12 +18,22 @@ import { logoutUser } from '../../redux/slices/authSlice';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useSelector((state) => state.auth);
+    const { activeBusiness } = useSelector((state) => state.business);
     const location = useLocation();
     const dispatch = useDispatch();
 
     const handleLogout = () => {
         dispatch(logoutUser());
     };
+
+    let effectiveRole = user?.role;
+    if (activeBusiness && user) {
+        if (activeBusiness.ownerId === user.uid) {
+            effectiveRole = 'Admin';
+        } else if (activeBusiness.users && activeBusiness.users[user.uid]) {
+            effectiveRole = activeBusiness.users[user.uid].role;
+        }
+    }
 
     const menuItems = [
         { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['Admin', 'Manager', 'Staff'] },
@@ -35,10 +45,11 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/quotations', icon: <FileSpreadsheet size={20} />, label: 'Quotations', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/reports', icon: <FileText size={20} />, label: 'Reports', roles: ['Admin', 'Manager'] },
+        { path: '/team', icon: <Users size={20} />, label: 'Team', roles: ['Admin'] },
         { path: '/settings', icon: <Settings size={20} />, label: 'Settings', roles: ['Admin'] },
     ];
 
-    const filteredMenu = menuItems.filter(item => item.roles.includes(user?.role));
+    const filteredMenu = menuItems.filter(item => item.roles.includes(effectiveRole));
 
     const sidebarClasses = `
         fixed inset-y-0 left-0 z-50 w-64 bg-[#1a2e18] text-white flex flex-col transition-transform duration-300 transform 
@@ -63,7 +74,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                             <span className="material-symbols-outlined text-forest-green" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
                             Vyapar Ledger
                         </h1>
-                        <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Portal • {user?.role}</p>
+                        <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Workspace • {effectiveRole}</p>
                     </div>
                     <button onClick={onClose} className="md:hidden text-white/70 hover:text-white">
                         <X size={20} />
@@ -79,8 +90,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 to={item.path}
                                 onClick={() => { if (window.innerWidth < 768) onClose(); }}
                                 className={`flex items-center px-6 py-3 text-sm font-semibold transition-all duration-200 relative group ${isActive
-                                        ? 'text-white'
-                                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                                    ? 'text-white'
+                                    : 'text-white/60 hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 {isActive && (
