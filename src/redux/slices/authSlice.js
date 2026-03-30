@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail, signInWithPopup } from 'firebase/auth';
 import { ref, get, set } from 'firebase/database';
-import { auth, db } from '../../services/firebase';
+import { auth, db, googleProvider } from '../../services/firebase';
 
 export const loginUser = createAsyncThunk('auth/login', async ({ email, password }, { rejectWithValue }) => {
     try {
@@ -19,6 +19,43 @@ export const signupUser = createAsyncThunk('auth/signup', async ({ email, passwo
         const userData = { email, name, role: role || 'Staff', createdAt: Date.now() };
         await set(ref(db, `users/${user.uid}`), userData);
         return { uid: user.uid, ...userData };
+    } catch (error) {
+        return rejectWithValue(error.message);
+    }
+});
+
+export const googleLogin = createAsyncThunk('auth/googleLogin', async (userDataParams, { rejectWithValue }) => {
+    try {
+        const { name: providedName, role: providedRole } = userDataParams || {};
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Check if user already exists in RTDB
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+            const existingUser = snapshot.val();
+            // If role is provided (from Signup), it must match the existing role
+            if (providedRole && existingUser.role !== providedRole) {
+                // If they are different roles, we block and sign them out from Firebase Auth to be safe
+                await signOut(auth);
+                return rejectWithValue(`This email is already assigned the role: ${existingUser.role}. Please use a different email or select the correct role.`);
+            }
+            return { uid: user.uid, ...existingUser };
+        } else {
+            // New user from Google
+            // If they are on the Signup page, they must have provided name/role
+            // If they are on Login page and it's their first time, we might need a fallback or block
+            const userData = {
+                email: user.email,
+                name: providedName || user.displayName,
+                role: providedRole || 'Staff', // Default fallback if not provided
+                createdAt: Date.now()
+            };
+            await set(userRef, userData);
+            return { uid: user.uid, ...userData };
+        }
     } catch (error) {
         return rejectWithValue(error.message);
     }
@@ -70,6 +107,9 @@ const authSlice = createSlice({
             .addCase(signupUser.pending, (state) => { state.loading = true; state.error = null; })
             .addCase(signupUser.fulfilled, (state, action) => { state.loading = false; state.user = action.payload; state.isAuthenticated = true; })
             .addCase(signupUser.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+            .addCase(googleLogin.pending, (state) => { state.loading = true; state.error = null; })
+            .addCase(googleLogin.fulfilled, (state, action) => { state.loading = false; state.user = action.payload; state.isAuthenticated = true; })
+            .addCase(googleLogin.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
             .addCase(logoutUser.fulfilled, (state) => { state.user = null; state.isAuthenticated = false; });
     },
 });

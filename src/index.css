@@ -1,23 +1,85 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand Colors from provided design */
+  --color-surface-dim: #d8dadc;
+  --color-on-secondary-fixed-variant: #413f82;
+  --color-tertiary-fixed-dim: #ffb695;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-bright: #f7f9fb;
+  --color-error-container: #ffdad6;
+  --color-tertiary-container: #a44100;
+  --color-on-secondary: #ffffff;
+  --color-inverse-on-surface: #eff1f3;
+  --color-on-secondary-container: #454386;
+  --color-surface-tint: #4d44e3;
+  --color-on-primary-fixed: #0f0069;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-tertiary-fixed-variant: #7b2f00;
+  --color-outline-variant: #c7c4d8;
+  --color-on-secondary-fixed: #140f54;
+  --color-secondary-fixed-dim: #c3c0ff;
+  --color-surface-container-low: #f2f4f6;
+  --color-on-primary-fixed-variant: #3323cc;
+  --color-outline: #777587;
+  --color-secondary-container: #b6b4ff;
+  --color-surface-container: #eceef0;
+  --color-on-error-container: #93000a;
+  --color-on-surface-variant: #464555;
+  --color-on-tertiary: #ffffff;
+  --color-primary-fixed: #e2dfff;
+  --color-tertiary-fixed: #ffdbcc;
+  --color-on-error: #ffffff;
+  --color-primary-container: #4f46e5;
+  --color-surface: #f7f9fb;
+  --color-on-surface: #191c1e;
+  --color-inverse-surface: #2d3133;
+  --color-secondary: #58579b;
+  --color-inverse-primary: #c3c0ff;
+  --color-surface-variant: #e0e3e5;
+  --color-on-tertiary-fixed: #351000;
+  --color-primary: #3525cd;
+  --color-secondary-fixed: #e2dfff;
+  --color-on-primary-container: #dad7ff;
+  --color-on-tertiary-container: #ffd2be;
+  --color-on-background: #191c1e;
+  --color-surface-container-lowest: #ffffff;
+  --color-error: #ba1a1a;
+  --color-tertiary: #7e3000;
+  --color-primary-fixed-dim: #c3c0ff;
+  --color-background: #f7f9fb;
+  --color-on-primary: #ffffff;
+
+  /* Typography */
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 bg-gray-900 text-gray-100;
-    /* Dark mode basics can be tweaked, but using light by default */
+    @apply bg-background font-body text-on-surface;
   }
 }
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-.dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
+.primary-gradient {
+  background: linear-gradient(135deg, #3525cd 0%, #4f46e5 100%);
+}
+
+.bg-mesh-gradient {
+  background-color: #3525cd;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(245, 68%, 45%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(244, 76%, 59%, 1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(245, 68%, 45%, 1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(244, 76%, 59%, 1) 0px, transparent 50%);
 }

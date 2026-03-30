@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../redux/slices/authSlice';
+import { loginUser, googleLogin } from '../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { LogIn, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -39,62 +38,174 @@ const Login = () => {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            const resultAction = await dispatch(googleLogin());
+            if (googleLogin.fulfilled.match(resultAction)) {
+                toast.success('Logged in with Google');
+                navigate('/');
+            } else {
+                toast.error(resultAction.payload || 'Google Login failed');
+            }
+        } catch (err) {
+            toast.error('An error occurred during Google Login');
+        }
+    };
+
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-            <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-                <div className="flex justify-center mb-8">
-                    <div className="bg-indigo-600 p-3 rounded-full text-white">
-                        <LogIn size={32} />
-                    </div>
-                </div>
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Login to Vyapar Clone</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <input
-                            type="email"
-                            required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Password</label>
-                        <div className="mt-1 relative">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                required
-                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 pr-10"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                            <button
-                                type="button"
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                onClick={() => setShowPassword(!showPassword)}
-                            >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </button>
+        <div className="bg-background font-body text-on-surface min-h-screen flex flex-col">
+            <main className="flex-grow flex flex-col md:flex-row">
+                {/* Left Section: Marketing/Intro */}
+                <section className="hidden md:flex md:w-1/2 bg-mesh-gradient relative overflow-hidden flex-col justify-between p-12 lg:p-20">
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                            </div>
+                            <span className="font-headline text-2xl font-bold text-white tracking-tight">Vyapar Ledger</span>
+                        </div>
+                        <div className="max-w-md">
+                            <h1 className="font-headline text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                                The Precision Architect for your business inventory.
+                            </h1>
+                            <p className="text-on-primary-container text-lg font-medium opacity-90 leading-relaxed">
+                                Master your stock levels, automate entries, and gain architectural clarity over your entire supply chain with our next-generation digital ledger.
+                            </p>
                         </div>
                     </div>
-                    <div className="flex justify-end">
-                        <Link to="/forgot-password" size="sm" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                            Forgot Password?
-                        </Link>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-6">
+                            <div className="flex -space-x-3">
+                                <img alt="User 1" className="w-10 h-10 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH9XGse9d1XVfQEiCkgEC70kMalMdxLqTa36e2Yt6_t4XTFbgz47oFkrcudZSI2bjZYDuTtnEYejVR5khy-vbwgit4yyAt17km4Pf0z4hHrBzfO06852dgRgMY7CiP_P6qrnE3MiT697MIv0XEoPB3TNOrml1pJuXocKdxkS_ijpgjp06oxgwEqTxjaifLQp7isVSuwOMR00JPdR9GrVzy6KnEaE67nL54mpMz6xbkd-ihTNgNUBFqemB0CdqrrWMu1ffjrQnnBGc" />
+                                <img alt="User 2" className="w-10 h-10 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx_Hoe9P9tJdp3N4Of6eK6qTiDHGjbdgmTGLWSCen_Mv0sAQlT-zfnpTT0fD-80snAUHFSUyVAXzjHnr3pVKguw7DX9X52ZC4Oh3Jger_kq0sWx-s2DkjmFWxE7ZLHF15fFkf4ZMJU0_XyPj-iGLKehA1SY4CHZqzY6vo_8l2yyDiA3eEnFVED1WQikgZWAlrqsvPik_WgHd67l5MoBm797XYqmrwqCA9NDhOJ9O7D43_OcwhrfPGL-5n16Fm7EW6-U0AL4ONmc_Q" />
+                                <img alt="User 3" className="w-10 h-10 rounded-full border-2 border-primary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbVivBe7vcYzCWx9pl72sLES8LglsOjyhj4ChKh_gLm1QOZMp49cGe9hM_BrlGre77_8dnU4-pR0BCT-8uMoejIZlB4ojnBlZJttg9s0xAMYezaBKNL7WTlEFAUNUuPY_ROt0E_k342JXjDqnSaCqkvQ1skMaLXfPAfg-g4Lbyh1L41TqGXYbFU4l9Ee2ePIXNjAFM93lNEpwmpji0nLheq6-wC0MEVKgS7Oy3sLFvG4nfRwAbDL5Q_KpqYBIC1QsCptMBbi7oodI" />
+                            </div>
+                            <p className="text-white text-sm font-medium">
+                                Trusted by <span className="text-secondary-container font-bold">12,000+</span> businesses worldwide.
+                            </p>
+                        </div>
                     </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-                    >
-                        {loading ? 'Logging in...' : 'Sign In'}
-                    </button>
-                </form>
-                <div className="mt-4 text-center">
-                    <p className="text-sm text-gray-600">Don't have an account? <Link to="/signup" className="text-indigo-600 hover:text-indigo-500 font-medium">Sign up</Link></p>
+                    {/* Decorative Elements */}
+                    <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+                    <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+                </section>
+
+                {/* Right Section: Login Card */}
+                <section className="flex-grow flex items-center justify-center p-6 md:p-12 lg:p-24 bg-surface">
+                    <div className="w-full max-w-[440px]">
+                        {/* Mobile Logo (Visible only on small screens) */}
+                        <div className="flex md:hidden items-center gap-3 mb-10">
+                            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                                <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                            </div>
+                            <span className="font-headline text-xl font-bold text-on-surface tracking-tight">Vyapar Ledger</span>
+                        </div>
+                        <header className="mb-10 text-center md:text-left">
+                            <h2 className="font-headline text-3xl font-bold text-on-surface mb-2">Welcome back</h2>
+                            <p className="text-on-surface-variant font-medium">Please enter your credentials to access the ledger.</p>
+                        </header>
+
+                        {/* Social Login Buttons */}
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            <button
+                                onClick={handleGoogleLogin}
+                                className="flex items-center justify-center gap-3 py-3 px-4 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low transition-colors rounded-lg font-medium text-sm text-on-surface"
+                                disabled={loading}
+                            >
+                                <img alt="Google" className="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqxr73NJUTwWxQHU6-UnVhPP8wG6tsK72jahKlmMlk5F2d_2sXthZmx0gAio2nYVtPeD1FU3L30ETB3QKak9CzL5UZ-MVoV74cVOndk8tl8yxfTYzVZLKvpdZCUxRFiUtxhd4V_mMhhlxkMXaeYjn6fiyGzu2RpuFkKBzDwRIdd310ngBh-GmOL1aazEERDs4nRn0_IBu2KBRVs1OdUkZ_89OLvQfUqRGbBWFSoWTPIdKiskphTkHyfsQH2wWk0MtqTD-oZqP-d28" />
+                                Google
+                            </button>
+                            <button className="flex items-center justify-center gap-3 py-3 px-4 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low transition-colors rounded-lg font-medium text-sm text-on-surface">
+                                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">key</span>
+                                SSO
+                            </button>
+                        </div>
+
+                        <div className="relative flex items-center justify-center mb-8">
+                            <div className="w-full border-t border-outline-variant"></div>
+                            <span className="absolute px-4 bg-surface text-on-surface-variant text-xs font-bold uppercase tracking-widest">Or continue with</span>
+                        </div>
+
+                        {/* Login Form */}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Email Field */}
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant ml-1" htmlFor="email">Email Address</label>
+                                <div className="relative group">
+                                    <input
+                                        className="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant focus:ring-2 focus:ring-primary/40 rounded-lg py-3.5 px-4 transition-all outline-none text-on-surface font-medium placeholder:text-outline/60"
+                                        id="email"
+                                        placeholder="name@company.com"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">
+                                        <span className="material-symbols-outlined text-[20px]">mail</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Password Field */}
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center ml-1">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant" htmlFor="password">Password</label>
+                                    <Link className="text-xs font-semibold text-primary hover:text-primary-container transition-colors" to="/forgot-password">Forgot Password?</Link>
+                                </div>
+                                <div className="relative group">
+                                    <input
+                                        className="w-full bg-surface-container-lowest border-0 ring-1 ring-outline-variant focus:ring-2 focus:ring-primary/40 rounded-lg py-3.5 px-4 transition-all outline-none text-on-surface font-medium placeholder:text-outline/60"
+                                        id="password"
+                                        placeholder="••••••••"
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                    <button
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Action Button */}
+                            <div className="pt-2">
+                                <button
+                                    className="w-full bg-gradient-to-br from-primary to-primary-container text-white font-bold py-4 rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    type="submit"
+                                    disabled={loading}
+                                >
+                                    <span>{loading ? 'Signing in...' : 'Sign in to Account'}</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <footer className="mt-12 text-center">
+                            <p className="text-on-surface-variant font-medium">
+                                Don't have an account?
+                                <Link className="text-primary font-bold hover:underline decoration-2 underline-offset-4 ml-1" to="/signup">Create one now</Link>
+                            </p>
+                        </footer>
+                    </div>
+                </section>
+            </main>
+
+            {/* Footer Component */}
+            <footer className="flex flex-col md:flex-row justify-between items-center w-full px-8 py-6 mt-auto bg-surface-container-low border-t border-outline-variant font-body text-xs text-on-surface-variant">
+                <div className="mb-4 md:mb-0">
+                    © 2024 Vyapar Ledger. Precision in every entry.
                 </div>
-            </div>
+                <div className="flex gap-6">
+                    <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                    <a className="hover:text-primary transition-colors" href="#">Terms of Service</a>
+                    <a className="hover:text-primary transition-colors" href="#">Contact Support</a>
+                </div>
+            </footer>
         </div>
     );
 };
