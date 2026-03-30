@@ -324,7 +324,7 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
     useEffect(() => {
         if (activeBusiness?.id) {
             dispatch(fetchCustomers(activeBusiness.id));
-            dispatch(fetchProducts());
+            dispatch(fetchProducts(activeBusiness.id));
         }
     }, [dispatch, activeBusiness]);
 
@@ -712,8 +712,8 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                     key={t.id}
                     onClick={() => setActiveTemplate(t.id)}
                     className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-left ${activeTemplate === t.id
-                            ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
-                            : 'border-gray-100 hover:border-gray-300 bg-white'
+                        ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
+                        : 'border-gray-100 hover:border-gray-300 bg-white'
                         }`}
                 >
                     <div className={`w-6 h-6 rounded-lg flex-shrink-0 ${t.color}`}></div>
@@ -740,8 +740,8 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                     key={t.id}
                     onClick={() => setActiveTemplate(t.id)}
                     className={`flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all ${activeTemplate === t.id
-                            ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
-                            : 'border-gray-100 bg-white hover:border-gray-300'
+                        ? 'border-indigo-600 bg-indigo-50 shadow-lg shadow-indigo-100'
+                        : 'border-gray-100 bg-white hover:border-gray-300'
                         }`}
                 >
                     <div className={`w-4 h-4 rounded-md flex-shrink-0 ${t.color}`}></div>

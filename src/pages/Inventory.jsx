@@ -32,7 +32,7 @@ const Inventory = () => {
     useEffect(() => {
         if (activeBusiness?.id) {
             dispatch(fetchInventoryLogs(activeBusiness.id));
-            dispatch(fetchProducts());
+            dispatch(fetchProducts(activeBusiness.id));
         }
     }, [dispatch, activeBusiness]);
 
@@ -103,7 +103,7 @@ const Inventory = () => {
                 quantity: Number(formData.quantity),
                 businessId: activeBusiness.id
             })).unwrap();
-            dispatch(fetchProducts());
+            dispatch(fetchProducts(activeBusiness.id));
             toast.success(`Stock ${modalType === 'IN' ? 'added' : 'removed'} successfully`);
             handleCloseModal();
         } catch (error) {
@@ -115,7 +115,7 @@ const Inventory = () => {
         if (window.confirm("Are you sure you want to delete this movement? This will reverse the stock change.")) {
             try {
                 await dispatch(deleteInventoryLog(log)).unwrap();
-                dispatch(fetchProducts());
+                dispatch(fetchProducts(activeBusiness.id));
                 toast.success("Movement deleted");
             } catch (error) {
                 toast.error(error || "Delete failed");
