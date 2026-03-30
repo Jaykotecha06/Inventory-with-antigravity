@@ -12,6 +12,8 @@ const Login = () => {
     const navigate = useNavigate();
     const { loading, isAuthenticated } = useSelector((state) => state.auth);
 
+    const [role, setRole] = useState('Staff');
+
     useEffect(() => {
         if (isAuthenticated) {
             navigate('/');
@@ -40,7 +42,7 @@ const Login = () => {
 
     const handleGoogleLogin = async () => {
         try {
-            const resultAction = await dispatch(googleLogin());
+            const resultAction = await dispatch(googleLogin({ role }));
             if (googleLogin.fulfilled.match(resultAction)) {
                 toast.success('Logged in with Google');
                 navigate('/');
@@ -100,10 +102,34 @@ const Login = () => {
                             </div>
                             <span className="font-headline text-xl font-bold text-on-surface tracking-tight">Vyapar Ledger</span>
                         </div>
-                        <header className="mb-10 text-center md:text-left">
+                        <header className="mb-8 text-center md:text-left">
                             <h2 className="font-headline text-3xl font-bold text-on-surface mb-2">Welcome back</h2>
                             <p className="text-on-surface-variant font-medium">Please enter your credentials to access the ledger.</p>
                         </header>
+
+                        {/* Role Selector for Google Login */}
+                        <div className="space-y-1.5 mb-6">
+                            <label className="text-sm font-semibold text-on-surface-variant px-1" htmlFor="role">Workspace Role (For Google Login)</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant group-focus-within:text-primary transition-colors">
+                                    <span className="material-symbols-outlined text-[20px]">shield_person</span>
+                                </div>
+                                <select
+                                    className="w-full pl-11 pr-10 py-3.5 bg-surface-container-lowest border-0 ring-1 ring-outline-variant focus:ring-2 focus:ring-primary/40 rounded-xl focus:bg-white transition-all text-on-surface font-medium shadow-sm appearance-none"
+                                    id="role"
+                                    name="role"
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                >
+                                    <option value="Staff">Staff</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-on-surface-variant">
+                                    <span className="material-symbols-outlined">expand_more</span>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Social Login Buttons */}
                         <div className="grid grid-cols-2 gap-4 mb-8">
