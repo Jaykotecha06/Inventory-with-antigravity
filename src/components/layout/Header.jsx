@@ -18,17 +18,17 @@ const Header = ({ onMenuClick }) => {
 
                     {/* Business Selector Dropdown */}
                     <div className="relative group ml-4 md:ml-0">
-                        <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-2xl cursor-pointer hover:bg-gray-100 hover:border-indigo-200 transition-all duration-300">
-                            <div className="bg-indigo-600 p-2 rounded-xl text-white hidden sm:block shadow-md group-hover:shadow-indigo-100">
+                        <div className="flex items-center gap-3 bg-surface border border-outline-variant/30 px-4 py-2.5 rounded-2xl cursor-pointer hover:bg-surface-container-low hover:border-forest-green/30 transition-all duration-300">
+                            <div className="bg-forest-green p-2 rounded-xl text-white hidden sm:block shadow-md shadow-forest-green/20">
                                 <Building2 size={18} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Company Profile</span>
+                                <span className="text-[9px] text-on-surface-variant font-black uppercase tracking-widest leading-none mb-1">Company Profile</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-black text-gray-800 truncate max-w-[140px] uppercase tracking-tight">
+                                    <span className="text-sm font-black text-on-surface truncate max-w-[140px] uppercase tracking-tight">
                                         {activeBusiness?.name || "Select Business"}
                                     </span>
-                                    <ChevronDown size={14} className="text-indigo-400 group-hover:translate-y-0.5 transition-transform" />
+                                    <ChevronDown size={14} className="text-forest-green group-hover:translate-y-0.5 transition-transform" />
                                 </div>
                             </div>
                         </div>
@@ -45,14 +45,14 @@ const Header = ({ onMenuClick }) => {
                                         <button
                                             key={b.id}
                                             onClick={() => dispatch(setActiveBusiness(b))}
-                                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 ${activeBusiness?.id === b.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'hover:bg-gray-50 text-gray-600 hover:translate-x-1'}`}
+                                            className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-left transition-all duration-200 ${activeBusiness?.id === b.id ? 'bg-forest-green text-white shadow-lg shadow-forest-green/20' : 'hover:bg-surface-container-low text-on-surface-variant hover:translate-x-1'}`}
                                         >
-                                            <div className={`p-2 rounded-xl ${activeBusiness?.id === b.id ? 'bg-white/20' : 'bg-indigo-50 text-indigo-500'}`}>
+                                            <div className={`p-2 rounded-xl ${activeBusiness?.id === b.id ? 'bg-white/20' : 'bg-forest-green/5 text-forest-green'}`}>
                                                 <Building2 size={16} />
                                             </div>
                                             <div className="flex flex-col overflow-hidden">
                                                 <span className="text-sm font-bold truncate uppercase tracking-tight">{b.name}</span>
-                                                <span className={`text-[10px] truncate font-medium ${activeBusiness?.id === b.id ? 'text-white/70' : 'text-gray-400'}`}>
+                                                <span className={`text-[10px] truncate font-medium ${activeBusiness?.id === b.id ? 'text-white/70' : 'text-on-surface-variant/70'}`}>
                                                     {b.category} • {b.address || 'Global'}
                                                 </span>
                                             </div>
@@ -63,8 +63,8 @@ const Header = ({ onMenuClick }) => {
                                     ))}
                                 </div>
 
-                                <div className="pt-2 border-t border-gray-50 mt-2">
-                                    <a href="/businesses" className="flex items-center justify-center gap-2 w-full py-3 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all">
+                                <div className="pt-2 border-t border-outline-variant/30 mt-2">
+                                    <a href="/businesses" className="flex items-center justify-center gap-2 w-full py-3 text-xs font-black text-forest-green hover:bg-forest-green/5 rounded-2xl transition-all uppercase tracking-widest">
                                         <Plus size={14} /> Register New Business
                                     </a>
                                 </div>

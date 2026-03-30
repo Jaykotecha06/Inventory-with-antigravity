@@ -11,11 +11,12 @@ import {
     Archive,
     Building2,
     ClipboardList,
-    FileSpreadsheet
+    FileSpreadsheet,
+    X
 } from 'lucide-react';
 import { logoutUser } from '../../redux/slices/authSlice';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useSelector((state) => state.auth);
     const location = useLocation();
     const dispatch = useDispatch();
@@ -39,46 +40,81 @@ const Sidebar = () => {
 
     const filteredMenu = menuItems.filter(item => item.roles.includes(user?.role));
 
+    const sidebarClasses = `
+        fixed inset-y-0 left-0 z-50 w-64 bg-[#1a2e18] text-white flex flex-col transition-transform duration-300 transform 
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:relative md:translate-x-0 md:flex
+    `;
+
     return (
-        <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col transition-all duration-300 hidden md:flex">
-            <div className="p-6 border-b border-gray-800">
-                <h1 className="text-2xl font-bold tracking-wider text-indigo-400">VyaparClone</h1>
-                <p className="text-xs text-gray-400 mt-1">Role: {user?.role}</p>
-            </div>
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={onClose}
+                />
+            )}
 
-            <nav className="flex-1 py-4 space-y-1">
-                {filteredMenu.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`flex items-center px-6 py-3 text-sm font-medium transition-colors ${location.pathname === item.path
-                            ? 'bg-gray-800 text-indigo-400 border-r-4 border-indigo-500'
-                            : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                            }`}
-                    >
-                        <span className="mr-3">{item.icon}</span>
-                        {item.label}
-                    </Link>
-                ))}
-            </nav>
-
-            <div className="p-4 border-t border-gray-800">
-                <div className="flex items-center px-4 py-2 mb-2 bg-gray-800 rounded-md">
-                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold mr-3">{user?.name?.charAt(0) || 'U'}</div>
-                    <div className="flex-1 truncate">
-                        <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-                        <p className="text-xs text-gray-400 truncate">{user?.email}</p>
+            <aside className={sidebarClasses}>
+                <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            <span className="material-symbols-outlined text-forest-green" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                            Vyapar Ledger
+                        </h1>
+                        <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Portal • {user?.role}</p>
                     </div>
+                    <button onClick={onClose} className="md:hidden text-white/70 hover:text-white">
+                        <X size={20} />
+                    </button>
                 </div>
-                <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center px-4 py-2 text-sm font-medium text-red-400 hover:bg-gray-800 hover:text-red-300 rounded-md transition-colors"
-                >
-                    <LogOut size={20} className="mr-3" />
-                    Logout
-                </button>
-            </div>
-        </aside>
+
+                <nav className="flex-1 py-6 space-y-1 overflow-y-auto custom-scrollbar">
+                    {filteredMenu.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => { if (window.innerWidth < 768) onClose(); }}
+                                className={`flex items-center px-6 py-3 text-sm font-semibold transition-all duration-200 relative group ${isActive
+                                        ? 'text-white'
+                                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                {isActive && (
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-forest-green shadow-[0_0_15px_rgba(74,124,68,0.5)]"></div>
+                                )}
+                                <span className={`mr-3 transition-transform duration-200 ${isActive ? 'text-forest-green scale-110' : 'group-hover:scale-110'}`}>
+                                    {item.icon}
+                                </span>
+                                {item.label}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                <div className="p-4 border-t border-white/10 bg-black/10">
+                    <div className="flex items-center gap-3 px-3 py-3 mb-4 bg-white/5 rounded-2xl border border-white/5">
+                        <div className="w-10 h-10 rounded-xl bg-forest-green flex items-center justify-center text-white font-bold shadow-lg shadow-forest-green/20">
+                            {user?.name?.charAt(0) || 'U'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                            <p className="text-[10px] text-white/40 truncate font-medium">{user?.email}</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-all duration-200"
+                    >
+                        <LogOut size={18} className="mr-3" />
+                        Sign Out
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 };
 

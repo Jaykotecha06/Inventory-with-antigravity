@@ -40,15 +40,7 @@ const Layout = () => {
 
     return (
         <div className="flex h-screen overflow-hidden bg-gray-50">
-            <Sidebar />
-
-            {/* Mobile overlay */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-gray-800 bg-opacity-75 transition-opacity md:hidden"
-                    onClick={toggleSidebar}
-                ></div>
-            )}
+            <Sidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
 
             <div className="flex flex-col flex-1 min-w-0 relative">
                 <Header onMenuClick={toggleSidebar} />
