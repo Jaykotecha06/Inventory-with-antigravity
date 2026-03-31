@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import CreatePurchase from './CreatePurchase';
 import { fetchPurchases, deletePurchase } from '../redux/slices/purchaseSlice';
+import { fetchProducts } from '../redux/slices/productSlice';
 import toast from 'react-hot-toast';
 
 const Purchases = () => {
@@ -79,6 +80,7 @@ const Purchases = () => {
         if (window.confirm(`Delete Purchase Order? This will reverse the stock.`)) {
             try {
                 await dispatch(deletePurchase(purchase)).unwrap();
+                dispatch(fetchProducts(activeBusiness.id));
                 toast.success('Purchase deleted and stock reversed');
             } catch (error) {
                 toast.error(error.message || 'Failed to delete');

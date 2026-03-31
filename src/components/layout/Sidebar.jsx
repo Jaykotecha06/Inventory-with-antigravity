@@ -36,7 +36,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     }
 
     const menuItems = [
-        { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['Admin', 'Manager', 'Staff'] },
+        { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['Admin', 'Manager'] },
         { path: '/businesses', icon: <Building2 size={20} />, label: 'My Businesses', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/products', icon: <Package size={20} />, label: 'Products', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/customers', icon: <Users size={20} />, label: 'Customers', roles: ['Admin', 'Manager'] },

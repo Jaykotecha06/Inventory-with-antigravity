@@ -24,17 +24,19 @@ export const recordStockMovement = createAsyncThunk('inventory/recordMovement', 
         const movementLog = { ...stockData, date: Date.now() };
         await set(logRef, movementLog);
 
-        const productRef = ref(db, `products/${stockData.productId}`);
-        const productSnap = await get(productRef);
-        if (productSnap.exists()) {
-            const product = productSnap.val();
-            let newStock = Number(product.stock || 0);
-            if (stockData.type === 'IN') {
-                newStock += Number(stockData.quantity);
-            } else if (stockData.type === 'OUT') {
-                newStock -= Number(stockData.quantity);
+        if (!stockData.skipStockUpdate) {
+            const productRef = ref(db, `products/${stockData.productId}`);
+            const productSnap = await get(productRef);
+            if (productSnap.exists()) {
+                const product = productSnap.val();
+                let newStock = Number(product.stock || 0);
+                if (stockData.type === 'IN') {
+                    newStock += Number(stockData.quantity);
+                } else if (stockData.type === 'OUT') {
+                    newStock -= Number(stockData.quantity);
+                }
+                await set(ref(db, `products/${stockData.productId}/stock`), newStock);
             }
-            await set(ref(db, `products/${stockData.productId}/stock`), newStock);
         }
 
         return { id: logRef.key, ...movementLog };

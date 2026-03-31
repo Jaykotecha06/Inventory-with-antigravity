@@ -429,11 +429,13 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                         quantity: item.quantity,
                         reason: `Sale Invoice #${resultAction.id.substring(resultAction.id.length - 6).toUpperCase()}`,
                         user: user.name || user.email,
-                        businessId: activeBusiness.id
+                        businessId: activeBusiness.id,
+                        skipStockUpdate: true
                     }));
                 }
                 toast.success("Invoice created successfully!");
             }
+            dispatch(fetchProducts(activeBusiness.id));
             onClose();
         } catch (error) {
             toast.error(error.message || "Failed to save invoice");

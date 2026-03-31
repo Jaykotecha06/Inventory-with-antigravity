@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Plus, Search, FileText, ChevronLeft, ChevronRight, Calendar, Filter, Eye, Edit, Trash2 } from 'lucide-react';
 import CreateInvoice from './CreateInvoice';
 import { fetchSales, deleteSale } from '../redux/slices/salesSlice';
+import { fetchProducts } from '../redux/slices/productSlice';
 import toast from 'react-hot-toast';
 
 const Sales = () => {
@@ -65,6 +66,7 @@ const Sales = () => {
         if (window.confirm(`Are you sure you want to delete Invoice #${sale.id.substring(sale.id.length - 6).toUpperCase()}? This will restore the stock for all items.`)) {
             try {
                 await dispatch(deleteSale(sale)).unwrap();
+                dispatch(fetchProducts(activeBusiness.id));
                 toast.success("Invoice deleted and stock restored");
             } catch (error) {
                 toast.error(error.message || "Failed to delete invoice");

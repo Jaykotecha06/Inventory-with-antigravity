@@ -171,11 +171,13 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                         quantity: item.quantity,
                         reason: `Purchase Order #${result.id.substring(result.id.length - 6).toUpperCase()}`,
                         user: user.name || user.email,
-                        businessId: activeBusiness.id
+                        businessId: activeBusiness.id,
+                        skipStockUpdate: true
                     }));
                 }
                 toast.success('Purchase order created!');
             }
+            dispatch(fetchProducts(activeBusiness.id));
             onClose();
         } catch (error) {
             toast.error(error.message || 'Failed to save purchase order');

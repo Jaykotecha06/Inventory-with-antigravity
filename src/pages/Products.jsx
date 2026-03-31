@@ -232,7 +232,7 @@ const Products = () => {
                                     <td colSpan="7" className="px-6 py-12 text-center text-gray-400 italic">No products found for this business.</td>
                                 </tr>
                             )}
-                        </tbody>
+                        </tbody> 
                     </table>
                 </div>
 
