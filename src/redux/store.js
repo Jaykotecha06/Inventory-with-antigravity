@@ -10,6 +10,8 @@ import purchaseReducer from './slices/purchaseSlice';
 import quotationReducer from './slices/quotationSlice';
 import teamReducer from './slices/teamSlice';
 
+import sessionReducer from './slices/sessionSlice';
+
 export const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -22,5 +24,6 @@ export const store = configureStore({
         purchases: purchaseReducer,
         quotations: quotationReducer,
         team: teamReducer,
+        sessions: sessionReducer,
     },
 });

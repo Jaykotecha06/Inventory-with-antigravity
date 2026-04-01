@@ -1,6 +1,9 @@
-import { Menu, Bell, Building2, ChevronDown, Plus } from 'lucide-react';
+import { Menu, Bell, Building2, ChevronDown, Plus, Settings, LogOut, Laptop } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveBusiness } from '../../redux/slices/businessSlice';
+import { logoutUser } from '../../redux/slices/authSlice';
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
 
 const Header = ({ onMenuClick }) => {
     const dispatch = useDispatch();
@@ -66,11 +69,37 @@ const Header = ({ onMenuClick }) => {
                     </div>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                     <button className="p-2 text-gray-400 hover:text-gray-500 relative">
                         <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         <Bell size={20} />
                     </button>
+
+                    {/* Settings Dropdown */}
+                    <div className="relative group">
+                        <button className="p-2 text-gray-400 hover:text-gray-500 transition-colors">
+                            <Settings size={20} />
+                        </button>
+
+                        <div className="absolute top-full right-0 mt-3 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[100] transform group-hover:translate-y-0 translate-y-2">
+                            <div className="p-2 space-y-1">
+                                <Link
+                                    to="/sessions"
+                                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    <Laptop size={18} className="text-gray-400" />
+                                    Sessions
+                                </Link>
+                                <button
+                                    onClick={() => dispatch(logoutUser())}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors text-left"
+                                >
+                                    <LogOut size={18} />
+                                    Log Out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>

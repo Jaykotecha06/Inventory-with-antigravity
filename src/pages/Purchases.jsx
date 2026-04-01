@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     Plus, Search, Edit, Trash2, Eye,
-    ChevronLeft, ChevronRight, Filter, ClipboardList
+    ChevronLeft, ChevronRight, Filter, ClipboardList, IndianRupee, X
 } from 'lucide-react';
 import CreatePurchase from './CreatePurchase';
-import { fetchPurchases, deletePurchase } from '../redux/slices/purchaseSlice';
+import { fetchPurchases, deletePurchase, updatePurchase } from '../redux/slices/purchaseSlice';
 import { fetchProducts } from '../redux/slices/productSlice';
 import toast from 'react-hot-toast';
 
@@ -18,6 +18,7 @@ const Purchases = () => {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [viewingPurchase, setViewingPurchase] = useState(null);
     const [editingPurchase, setEditingPurchase] = useState(null);
+    const [paymentModal, setPaymentModal] = useState({ isOpen: false, purchase: null, amount: '', method: 'Cash' });
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -106,6 +107,43 @@ const Purchases = () => {
             isViewing={false}
         />
     );
+
+    const handleRecordPayment = async (e) => {
+        e.preventDefault();
+        const { purchase, amount, method } = paymentModal;
+        const paidAmount = Number(amount);
+        if (paidAmount <= 0 || paidAmount > purchase.balanceDue) {
+            return toast.error("Invalid payment amount");
+        }
+
+        try {
+            const newAmountPaid = (purchase.amountPaid || 0) + paidAmount;
+            const newBalanceDue = purchase.totalAmount - newAmountPaid;
+            const newPaymentStatus = newBalanceDue <= 0 ? 'Paid' : 'Partial';
+
+            const newPaymentRecord = {
+                id: Date.now().toString(),
+                date: Date.now(),
+                amount: paidAmount,
+                method: method,
+                notes: 'Subsequent Payment'
+            };
+
+            const updatedPurchase = {
+                ...purchase,
+                amountPaid: newAmountPaid,
+                balanceDue: newBalanceDue,
+                paymentStatus: newPaymentStatus,
+                paymentHistory: [...(purchase.paymentHistory || []), newPaymentRecord]
+            };
+
+            await dispatch(updatePurchase({ id: purchase.id, oldPurchase: purchase, newPurchaseData: updatedPurchase })).unwrap();
+            toast.success("Payment recorded successfully");
+            setPaymentModal({ isOpen: false, purchase: null, amount: '', method: 'Cash' });
+        } catch (error) {
+            toast.error(error.message || "Failed to record payment");
+        }
+    };
 
     return (
         <div className="space-y-6 w-full min-w-0">
@@ -204,6 +242,7 @@ const Purchases = () => {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -261,9 +300,22 @@ const Purchases = () => {
                                         ₹{Number(p.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                     </td>
 
+                                    {/* Balance */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-red-600 tracking-tight">
+                                        {p.balanceDue > 0 ? `₹${Number(p.balanceDue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                                    </td>
+
                                     {/* Actions */}
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => setPaymentModal({ isOpen: true, purchase: p, amount: p.balanceDue, method: 'Cash' })}
+                                                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all shadow-sm ${p.balanceDue > 0 ? 'bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white' : 'opacity-30 cursor-not-allowed bg-gray-50 text-gray-400'}`}
+                                                title="Record Payment"
+                                                disabled={!p.balanceDue || p.balanceDue <= 0}
+                                            >
+                                                <IndianRupee size={14} />
+                                            </button>
                                             <button
                                                 onClick={() => setViewingPurchase(p)}
                                                 className="text-orange-600 hover:text-orange-900 bg-orange-50 p-1.5 rounded-lg transition-colors"
@@ -343,6 +395,54 @@ const Purchases = () => {
                         <a href="/businesses" className="block w-full py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition shadow-lg">
                             Go to My Businesses
                         </a>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Modal */}
+            {paymentModal.isOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
+                    <div className="bg-white rounded-[2rem] w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in duration-200 border border-gray-100">
+                        <div className="bg-orange-600 p-6 text-white flex justify-between items-center">
+                            <div>
+                                <h3 className="text-lg font-black uppercase tracking-widest">Pay Supplier</h3>
+                                <p className="text-orange-200 text-xs font-bold mt-1 uppercase tracking-wider">PO #{paymentModal.purchase?.id.substring(paymentModal.purchase.id.length - 6).toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => setPaymentModal({ isOpen: false, purchase: null, amount: '', method: 'Cash' })} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleRecordPayment} className="p-6 space-y-5">
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Amount to Pay (₹)</label>
+                                <input
+                                    type="number"
+                                    max={paymentModal.purchase?.balanceDue}
+                                    min="1"
+                                    step="0.01"
+                                    required
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg font-black text-gray-900 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all"
+                                    value={paymentModal.amount}
+                                    onChange={(e) => setPaymentModal({ ...paymentModal, amount: e.target.value })}
+                                />
+                                <p className="text-[10px] font-bold text-orange-500 mt-2 uppercase tracking-wide">Pending Balance: ₹{paymentModal.purchase?.balanceDue?.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Payment Mode</label>
+                                <select
+                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 transition-all cursor-pointer"
+                                    value={paymentModal.method}
+                                    onChange={(e) => setPaymentModal({ ...paymentModal, method: e.target.value })}
+                                >
+                                    <option value="Cash">Cash</option>
+                                    <option value="Online">Online / UPI</option>
+                                    <option value="Card">Card / Bank</option>
+                                </select>
+                            </div>
+                            <button type="submit" className="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-orange-700 transition shadow-xl shadow-orange-100 active:scale-95">
+                                Record Payment to Supplier
+                            </button>
+                        </form>
                     </div>
                 </div>
             )}

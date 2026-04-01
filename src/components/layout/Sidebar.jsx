@@ -12,7 +12,8 @@ import {
     Building2,
     ClipboardList,
     FileSpreadsheet,
-    X
+    X,
+    Book
 } from 'lucide-react';
 import { logoutUser } from '../../redux/slices/authSlice';
 
@@ -46,7 +47,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: '/quotations', icon: <FileSpreadsheet size={20} />, label: 'Quotations', roles: ['Admin', 'Manager', 'Staff'] },
         { path: '/reports', icon: <FileText size={20} />, label: 'Reports', roles: ['Admin', 'Manager'] },
         { path: '/team', icon: <Users size={20} />, label: 'Team', roles: ['Admin'] },
-        { path: '/settings', icon: <Settings size={20} />, label: 'Settings', roles: ['Admin'] },
     ];
 
     const filteredMenu = menuItems.filter(item => item.roles.includes(effectiveRole));

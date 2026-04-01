@@ -45,9 +45,10 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
     const [purchaseDate, setPurchaseDate] = useState(
         purchaseData?.purchaseDate || new Date().toISOString().split('T')[0]
     );
-    const [paymentStatus, setPaymentStatus] = useState(purchaseData?.paymentStatus || 'Paid');
+    const [paymentMethod, setPaymentMethod] = useState(purchaseData?.paymentMethod || 'Cash');
     const [discount, setDiscount] = useState(purchaseData?.discount || 0);
     const [notes, setNotes] = useState(purchaseData?.notes || '');
+    const [amountPaidInput, setAmountPaidInput] = useState(purchaseData ? (purchaseData.amountPaid || 0) : '');
 
     const [items, setItems] = useState(
         purchaseData?.items || [{ id: Date.now(), productId: '', quantity: 1, price: 0, amount: 0 }]
@@ -134,6 +135,9 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
     const subTotal = useMemo(() => items.reduce((sum, item) => sum + item.amount, 0), [items]);
     const totalAmount = subTotal - Number(discount);
 
+    const actualAmountPaid = amountPaidInput === '' ? totalAmount : Number(amountPaidInput);
+    const balanceDue = totalAmount - actualAmountPaid;
+
     const handleSave = async () => {
         const validItems = items.filter(item => item.productId && item.quantity > 0);
         if (validItems.length === 0) return toast.error('Please add at least one valid product');
@@ -146,7 +150,10 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                 supplierPhone,
                 billNo,
                 purchaseDate,
-                paymentStatus,
+                paymentMethod,
+                paymentStatus: balanceDue <= 0 ? 'Paid' : (actualAmountPaid > 0 ? 'Partial' : 'Credit'),
+                amountPaid: Math.max(0, actualAmountPaid),
+                balanceDue: Math.max(0, balanceDue),
                 items: validItems,
                 subTotal,
                 discount: Number(discount),
@@ -157,6 +164,18 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                 businessId: activeBusiness.id,
                 createdAt: purchaseData?.createdAt || Date.now(),
             };
+
+            let updatedPaymentHistory = purchaseData?.paymentHistory || [];
+            if (!purchaseData?.id && actualAmountPaid > 0) {
+                updatedPaymentHistory = [{
+                    id: Date.now().toString(),
+                    date: Date.now(),
+                    amount: actualAmountPaid,
+                    method: paymentMethod,
+                    notes: 'Advance/Initial Payment'
+                }];
+            }
+            purchasePayload.paymentHistory = updatedPaymentHistory;
 
             if (purchaseData?.id) {
                 await dispatch(updatePurchase({ id: purchaseData.id, oldPurchase: purchaseData, newPurchaseData: purchasePayload })).unwrap();
@@ -421,15 +440,16 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                         </div>
                         <div>
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">
-                                <Tag size={10} className="inline mr-1" />Payment Status
+                                <Tag size={10} className="inline mr-1" />Payment Method
                             </label>
                             <select
-                                value={paymentStatus}
-                                onChange={e => setPaymentStatus(e.target.value)}
+                                value={paymentMethod}
+                                onChange={e => setPaymentMethod(e.target.value)}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all cursor-pointer"
                             >
-                                <option value="Paid">Paid</option>
-                                <option value="Credit">Credit</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Online">Online / UPI</option>
+                                <option value="Card">Card</option>
                             </select>
                         </div>
                     </div>
@@ -546,6 +566,23 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                                     ₹{totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                 </span>
                             </div>
+                            <div className="flex justify-between items-center mt-3">
+                                <span className="text-sm font-bold text-gray-500">Amount Paid (₹)</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder={totalAmount.toFixed(0)}
+                                    value={amountPaidInput}
+                                    onChange={e => setAmountPaidInput(e.target.value)}
+                                    className="w-28 px-3 py-2 bg-orange-50 border border-orange-200 text-orange-700 rounded-xl text-sm font-black text-right focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all"
+                                />
+                            </div>
+                            {balanceDue > 0 && (
+                                <div className="flex justify-between items-center mt-2">
+                                    <span className="text-sm font-bold text-red-500">Balance Due</span>
+                                    <span className="text-sm font-black text-red-600">₹{balanceDue.toFixed(2)}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

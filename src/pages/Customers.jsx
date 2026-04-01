@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCustomers, addCustomer, updateCustomer, deleteCustomer } from '../redux/slices/customerSlice';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, ChevronLeft, ChevronRight, Filter, Book } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Customers = () => {
     const dispatch = useDispatch();
@@ -13,6 +14,7 @@ const Customers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentCustomer, setCurrentCustomer] = useState({ name: '', phone: '', email: '', address: '', type: 'Customer' });
+    const navigate = useNavigate();
 
     // Pagination & Filter States
     const [currentPage, setCurrentPage] = useState(1);
@@ -233,6 +235,13 @@ const Customers = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]">{customer.address || 'N/A'}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end gap-3">
+                                            <button
+                                                onClick={() => navigate('/ledger', { state: { openParty: customer.name, tab: customer.type === 'Supplier' ? 'payables' : 'receivables' } })}
+                                                className="text-emerald-600 hover:text-emerald-900 bg-emerald-50 p-1.5 rounded-lg transition-colors"
+                                                title="View Ledger"
+                                            >
+                                                <Book size={16} />
+                                            </button>
                                             <button onClick={() => handleOpenModal(customer)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors" title="Edit">
                                                 <Edit size={16} />
                                             </button>
@@ -330,8 +339,8 @@ const Customers = () => {
                                             type="button"
                                             onClick={() => setCurrentCustomer({ ...currentCustomer, type: t })}
                                             className={`py-3 rounded-xl font-black uppercase tracking-widest text-xs border-2 transition-all ${currentCustomer.type === t
-                                                    ? t === 'Supplier' ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100' : 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100'
-                                                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                                                ? t === 'Supplier' ? 'bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100' : 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100'
+                                                : 'border-gray-200 text-gray-400 hover:border-gray-300'
                                                 }`}
                                         >
                                             {t}

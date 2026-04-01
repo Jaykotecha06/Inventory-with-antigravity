@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
-import { onAuthStateChanged } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { ref, get, onValue } from 'firebase/database';
 import { auth, db } from './services/firebase';
 import { setUser, setAuthLoading } from './redux/slices/authSlice';
 
@@ -23,30 +23,56 @@ import Businesses from './pages/Businesses';
 import Purchases from './pages/Purchases';
 import Quotations from './pages/Quotations';
 import Team from './pages/Team';
+import Ledger from './pages/Ledger';
+import Sessions from './pages/Sessions';
 
 function App() {
   const dispatch = useDispatch();
-  const { loading, user } = useSelector(state => state.auth);
+  const { loading } = useSelector(state => state.auth);
 
   useEffect(() => {
+    let sessionUnsubscribe = null;
+
     // Listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (sessionUnsubscribe) {
+        sessionUnsubscribe();
+        sessionUnsubscribe = null;
+      }
+
       if (firebaseUser) {
         try {
           const userRef = ref(db, `users/${firebaseUser.uid}`);
           const snapshot = await get(userRef);
+          const sessionId = localStorage.getItem('sessionId');
+
           if (snapshot.exists()) {
             const userData = snapshot.val();
-            dispatch(setUser({ uid: firebaseUser.uid, email: firebaseUser.email, ...userData }));
+            dispatch(setUser({ uid: firebaseUser.uid, email: firebaseUser.email, ...userData, sessionId }));
           } else {
-            dispatch(setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'Staff' }));
+            dispatch(setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'Staff', sessionId }));
           }
+
+          // Session Guard: Listen for remote logout
+          if (sessionId) {
+            const sessionRef = ref(db, `sessions/${firebaseUser.uid}/${sessionId}`);
+            sessionUnsubscribe = onValue(sessionRef, (snap) => {
+              if (!snap.exists()) {
+                // Session was revoked
+                signOut(auth);
+                localStorage.removeItem('sessionId');
+                dispatch(setUser(null));
+              }
+            });
+          }
+
         } catch (e) {
           console.error("Auth sync error:", e);
-          dispatch(setUser(null)); // Treat as logged out on error
+          dispatch(setUser(null));
         }
       } else {
         dispatch(setUser(null));
+        localStorage.removeItem('sessionId');
       }
     });
 
@@ -57,6 +83,7 @@ function App() {
 
     return () => {
       unsubscribe();
+      if (sessionUnsubscribe) sessionUnsubscribe();
       clearTimeout(timer);
     };
   }, [dispatch]);
@@ -88,6 +115,8 @@ function App() {
           <Route path="businesses" element={<Businesses />} />
           <Route path="purchases" element={<Purchases />} />
           <Route path="quotations" element={<Quotations />} />
+          <Route path="ledger" element={<Ledger />} />
+          <Route path="sessions" element={<Sessions />} />
           <Route path="team" element={<AuthRoute allowedRoles={['Admin']}><Team /></AuthRoute>} />
 
           <Route path="reports" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Reports /></AuthRoute>} />

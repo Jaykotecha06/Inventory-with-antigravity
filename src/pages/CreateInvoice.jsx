@@ -314,6 +314,7 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
     const [discount, setDiscount] = useState(invoiceData?.discount || 0);
 
     const [items, setItems] = useState(invoiceData?.items || [{ id: Date.now(), productId: '', quantity: 1, price: 0, amount: 0 }]);
+    const [amountPaidInput, setAmountPaidInput] = useState(invoiceData ? (invoiceData.amountPaid || 0) : '');
     const [signature, setSignature] = useState(invoiceData?.signature || null);
     const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
     const [activeTemplate, setActiveTemplate] = useState(invoiceData?.template || 'standard');
@@ -391,6 +392,9 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
     const taxAndCharges = 0;
     const totalAmount = subTotal - Number(discount) + taxAndCharges;
 
+    const actualAmountPaid = amountPaidInput === '' ? totalAmount : Number(amountPaidInput);
+    const balanceDue = totalAmount - actualAmountPaid;
+
     const handleSaveInvoice = async () => {
         const validItems = items.filter(item => item.productId && item.quantity > 0);
 
@@ -407,8 +411,10 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                 discount: Number(discount),
                 taxAndCharges,
                 totalAmount,
+                amountPaid: Math.max(0, actualAmountPaid),
+                balanceDue: Math.max(0, balanceDue),
                 paymentMethod,
-                paymentStatus: 'Paid',
+                paymentStatus: balanceDue <= 0 ? 'Paid' : (actualAmountPaid > 0 ? 'Partial' : 'Unpaid'),
                 createdBy: user.uid,
                 creatorName: user.name || user.email,
                 businessId: activeBusiness.id,
@@ -416,6 +422,18 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                 signature,
                 template: activeTemplate
             };
+
+            let updatedPaymentHistory = invoiceData?.paymentHistory || [];
+            if (!invoiceData?.id && actualAmountPaid > 0) {
+                updatedPaymentHistory = [{
+                    id: Date.now().toString(),
+                    date: Date.now(),
+                    amount: actualAmountPaid,
+                    method: paymentMethod,
+                    notes: 'Advance/Initial Payment'
+                }];
+            }
+            saleData.paymentHistory = updatedPaymentHistory;
 
             if (invoiceData?.id) {
                 await dispatch(updateSale({ id: invoiceData.id, oldSale: invoiceData, newSaleData: saleData })).unwrap();
@@ -1043,6 +1061,25 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                                                     />
                                                 </div>
                                             </div>
+                                            <div className="flex justify-between items-center group mt-4 border-t border-white/10 pt-4">
+                                                <span className="text-indigo-300 font-bold text-sm uppercase">Amount Received</span>
+                                                <div className="relative w-28">
+                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white/40 text-xs font-black">₹</span>
+                                                    <input
+                                                        type="number"
+                                                        placeholder={totalAmount.toFixed(0)}
+                                                        className="w-full bg-white/10 border border-white/10 rounded-xl pl-6 pr-3 py-2 text-xs font-black text-right outline-none focus:ring-2 focus:ring-white/20 transition-all cursor-pointer"
+                                                        value={amountPaidInput}
+                                                        onChange={(e) => setAmountPaidInput(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {balanceDue > 0 && (
+                                                <div className="flex justify-between items-center text-orange-300 font-bold text-sm uppercase mt-2">
+                                                    <span>Balance Due</span>
+                                                    <span>₹{balanceDue.toFixed(2)}</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="pt-8 border-t border-white/10 flex justify-between items-end">
                                             <div className="space-y-1">
