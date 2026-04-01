@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     Plus, Search, FileSpreadsheet, ChevronLeft, ChevronRight,
-    Calendar, Eye, Edit, Trash2
+    Calendar, Eye, Pencil, Trash2
 } from 'lucide-react';
 import CreateQuotation from './CreateQuotation';
 import { fetchQuotations, deleteQuotation } from '../redux/slices/quotationSlice';
@@ -205,14 +205,14 @@ const Quotations = () => {
                                                 className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
                                                 title="Edit"
                                             >
-                                                <Edit size={14} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(q)}
                                                 className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                 title="Delete"
                                             >
-                                                <Trash2 size={14} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -243,7 +243,7 @@ const Quotations = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => setViewingQuotation(q)} className="p-2 bg-indigo-50 text-indigo-600 rounded-lg active:scale-95 transition-all shadow-sm"><Eye size={18} /></button>
-                                    <button onClick={() => setEditingQuotation(q)} className="p-2 bg-green-50 text-green-600 rounded-lg active:scale-95 transition-all shadow-sm"><Edit size={18} /></button>
+                                    <button onClick={() => setEditingQuotation(q)} className="p-2 bg-green-50 text-green-600 rounded-lg active:scale-95 transition-all shadow-sm"><Pencil size={18} /></button>
                                     <button onClick={() => handleDelete(q)} className="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-all shadow-sm"><Trash2 size={18} /></button>
                                 </div>
                             </div>

@@ -227,44 +227,44 @@ const Inventory = () => {
                 </div>
 
                 {/* Table View Component - Hidden on small screens */}
-                <div className="hidden lg:block overflow-x-auto">
+                <div className="hidden lg:block overflow-x-auto no-scrollbar">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-white">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Sr No</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Date & Time</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Type</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Product</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Qty</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Remark</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">User</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">No</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Date & Time</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Type</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Product</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Qty</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Remark</th>
+                                <th className="px-4 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">User</th>
+                                <th className="px-4 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
                             {paginatedLogs.map((log, index) => (
                                 <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">
+                                    <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500 font-bold">
                                         {((currentPage - 1) * itemsPerPage) + index + 1}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {new Date(log.date).toLocaleString()}
+                                    <td className="px-4 py-3 whitespace-nowrap text-[11px] text-gray-500">
+                                        {new Date(log.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 inline-flex text-[10px] leading-4 font-black rounded uppercase ${log.type === 'IN' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                        <span className={`px-2 py-0.5 inline-flex text-[9px] font-black rounded uppercase ${log.type === 'IN' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                             {log.type}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{getProductName(log.productId)}</td>
-                                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-black ${log.type === 'IN' ? 'text-green-600' : 'text-red-600'}`}>
+                                    <td className="px-4 py-3 whitespace-nowrap text-xs font-bold text-gray-900 truncate max-w-[120px]">{getProductName(log.productId)}</td>
+                                    <td className={`px-4 py-3 whitespace-nowrap text-xs font-black ${log.type === 'IN' ? 'text-green-600' : 'text-red-600'}`}>
                                         {log.type === 'IN' ? '+' : '-'}{log.quantity}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{log.reason || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{log.user}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-4 py-3 whitespace-nowrap text-[11px] text-gray-500 font-medium truncate max-w-[100px]">{log.reason || '-'}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-[11px] text-gray-500 truncate max-w-[80px]">{log.user?.split('@')[0]}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => handleView(log)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-2 rounded-lg transition-colors" title="View"><Eye size={16} /></button>
-                                            <button onClick={() => handleDelete(log)} className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-lg transition-colors" title="Delete"><Trash2 size={16} /></button>
+                                            <button onClick={() => handleView(log)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors" title="View"><Eye size={14} /></button>
+                                            <button onClick={() => handleDelete(log)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete"><Trash2 size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -391,7 +391,7 @@ const Inventory = () => {
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 no-scrollbar max-h-[80vh] overflow-y-auto">
                             <div>
                                 <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Product *</label>
                                 <select

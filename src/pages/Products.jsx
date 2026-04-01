@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addProduct, updateProduct, deleteProduct } from '../redux/slices/productSlice';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Search, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 
 const Products = () => {
     const dispatch = useDispatch();
@@ -193,7 +193,7 @@ const Products = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto no-scrollbar">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-white">
                             <tr>
@@ -220,7 +220,7 @@ const Products = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         {canManage && (
                                             <div className="flex justify-end gap-3">
-                                                <button onClick={() => handleOpenModal(product)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors"><Edit size={16} /></button>
+                                                <button onClick={() => handleOpenModal(product)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors"><Pencil size={16} /></button>
                                                 <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors"><Trash2 size={16} /></button>
                                             </div>
                                         )}
@@ -232,7 +232,7 @@ const Products = () => {
                                     <td colSpan="7" className="px-6 py-12 text-center text-gray-400 italic">No products found for this business.</td>
                                 </tr>
                             )}
-                        </tbody> 
+                        </tbody>
                     </table>
                 </div>
 
@@ -303,7 +303,7 @@ const Products = () => {
                                 <X size={24} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 no-scrollbar max-h-[80vh] overflow-y-auto">
                             <div>
                                 <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Product Name *</label>
                                 <input type="text" required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold" value={currentProduct.name} onChange={(e) => setCurrentProduct({ ...currentProduct, name: e.target.value })} />

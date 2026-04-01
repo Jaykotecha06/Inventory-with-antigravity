@@ -5,7 +5,7 @@ import { recordStockMovement } from '../redux/slices/inventorySlice';
 import { fetchCustomers } from '../redux/slices/customerSlice';
 import { fetchProducts } from '../redux/slices/productSlice';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, Trash2, Printer, Save, FileText, CreditCard, ShoppingBag, User, Phone, CheckCircle2, IndianRupee, Tag, Download, Share2, MessageCircle, PenTool, X, Upload, Palette, Mail, Smartphone, Edit as EditIcon, Globe, MapPin, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Printer, Save, FileText, CreditCard, ShoppingBag, User, Phone, CheckCircle2, IndianRupee, Tag, Download, Share2, MessageCircle, PenTool, X, Upload, Palette, Mail, Smartphone, Pencil, Globe, MapPin, ChevronRight } from 'lucide-react';
 import { useRef } from 'react';
 
 // --- TEMPLATES ---
@@ -667,7 +667,7 @@ const CreateInvoice = ({ onClose, invoiceData = null, isViewing = false, onEdit 
                 className="w-full flex items-center justify-between px-6 py-4 bg-green-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-xl shadow-green-100 group"
             >
                 <div className="flex items-center gap-3">
-                    <EditIcon size={18} /> Edit
+                    <Pencil size={18} /> Edit
                 </div>
                 <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
             </button>

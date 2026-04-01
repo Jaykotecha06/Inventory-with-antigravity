@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchCustomers, addCustomer, updateCustomer, deleteCustomer } from '../redux/slices/customerSlice';
 import toast from 'react-hot-toast';
-import { Plus, Search, Edit, Trash2, X, ChevronLeft, ChevronRight, Filter, Book } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, X, ChevronLeft, ChevronRight, Filter, Book } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Customers = () => {
@@ -243,7 +243,7 @@ const Customers = () => {
                                                 <Book size={16} />
                                             </button>
                                             <button onClick={() => handleOpenModal(customer)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors" title="Edit">
-                                                <Edit size={16} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete">
                                                 <Trash2 size={16} />

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchBusinesses, createBusiness, updateBusinessSlice, deleteBusinessSlice, setActiveBusiness } from '../redux/slices/businessSlice';
 import { fetchUserInvitations, acceptInvitation } from '../redux/slices/teamSlice';
-import { Plus, Edit, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2, Search, Filter, ChevronLeft, ChevronRight, X, UserPlus, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, MapPin, Phone, Mail, PlusCircle, Briefcase, CheckCircle2, Search, Filter, ChevronLeft, ChevronRight, X, UserPlus, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Businesses = () => {
@@ -169,7 +169,7 @@ const Businesses = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500 no-scrollbar">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Manage Businesses</h1>
@@ -261,16 +261,16 @@ const Businesses = () => {
                         </div>
                     </div>
                 </div>
-                <div className="overflow-x-auto hidden md:block">
+                <div className="overflow-x-auto hidden md:block no-scrollbar">
                     <table className="min-w-full divide-y divide-gray-100">
                         <thead className="bg-gray-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Sr No</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Business Information</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Industry</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contact Details</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th className="px-4 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-wider">Sr No</th>
+                                <th className="px-4 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-wider">Business Information</th>
+                                <th className="px-4 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-wider">Industry</th>
+                                <th className="px-4 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-wider">Contact Details</th>
+                                <th className="px-4 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-4 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
@@ -280,61 +280,57 @@ const Businesses = () => {
                                     className={`group hover:bg-gray-50/80 transition-all cursor-pointer ${activeBusiness?.id === business.id ? 'bg-indigo-50/30' : ''}`}
                                     onClick={() => handleSelectBusiness(business)}
                                 >
-                                    <td className="px-6 py-5 whitespace-nowrap text-sm text-gray-400 font-mono font-medium">
+                                    <td className="px-4 py-5 whitespace-nowrap text-sm text-gray-400 font-mono font-medium">
                                         {String(((currentPage - 1) * itemsPerPage) + index + 1).padStart(2, '0')}
                                     </td>
-                                    <td className="px-6 py-5 whitespace-nowrap">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`p-3 rounded-2xl ${activeBusiness?.id === business.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-100 text-indigo-500 shadow-sm group-hover:border-indigo-200'} transition-all duration-300`}>
-                                                <Building2 size={20} />
+                                    <td className="px-4 py-5 whitespace-nowrap">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-xl ${activeBusiness?.id === business.id ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white border border-gray-100 text-indigo-500'} transition-all`}>
+                                                <Building2 size={16} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{business.name}</p>
-                                                <p className="text-[10px] text-gray-400 font-medium truncate max-w-[180px] mt-0.5 flex items-center gap-1">
+                                                <p className="text-xs font-bold text-gray-900 uppercase tracking-tight truncate max-w-[120px]">{business.name}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium truncate max-w-[120px] mt-0.5 flex items-center gap-1">
                                                     <MapPin size={10} /> {business.address || 'Location Hidden'}
                                                 </p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 whitespace-nowrap">
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black bg-indigo-50 text-indigo-700 uppercase tracking-widest border border-indigo-100/50">
+                                    <td className="px-4 py-5 whitespace-nowrap">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black bg-indigo-50 text-indigo-700 uppercase tracking-widest border border-indigo-100/50">
                                             {business.category}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-5 whitespace-nowrap">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                <div className="p-1 bg-gray-50 rounded-md">
-                                                    <Phone size={10} className="text-gray-400" />
-                                                </div>
+                                    <td className="px-4 py-5 whitespace-nowrap">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-1.5 text-[11px] text-gray-600">
+                                                <Phone size={10} className="text-gray-400" />
                                                 <span className="font-bold tracking-tight">{business.phone || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                <div className="p-1 bg-gray-50 rounded-md">
-                                                    <Mail size={10} className="text-gray-400" />
-                                                </div>
-                                                <span className="font-medium underline decoration-gray-200 underline-offset-2 tracking-tight">{business.email || 'N/A'}</span>
+                                            <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                                <Mail size={10} className="text-gray-400" />
+                                                <span className="font-medium truncate max-w-[100px] tracking-tight">{business.email || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 whitespace-nowrap">
+                                    <td className="px-4 py-5 whitespace-nowrap">
                                         {activeBusiness?.id === business.id ? (
-                                            <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 shadow-sm w-fit">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                                                <span className="text-[10px] font-black uppercase tracking-tighter">Current Workspace</span>
+                                            <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2 py-1 rounded-lg border border-green-200">
+                                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse"></div>
+                                                <span className="text-[9px] font-black uppercase tracking-tighter">Active</span>
                                             </div>
                                         ) : (
-                                            <div className="text-[10px] font-bold text-gray-300 uppercase tracking-widest px-3 py-1.5">Available</div>
+                                            <div className="text-[9px] font-bold text-gray-300 uppercase tracking-widest px-2 py-1">Available</div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
+                                    <td className="px-4 py-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex justify-end gap-3">
                                             <button
                                                 onClick={() => handleOpenModal(business)}
                                                 className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
                                                 title="Edit"
                                             >
-                                                <Edit size={16} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(business.id)}
@@ -375,7 +371,7 @@ const Businesses = () => {
                                         onClick={() => handleOpenModal(business)}
                                         className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
                                     >
-                                        <Edit size={16} />
+                                        <Pencil size={16} />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(business.id)}
@@ -483,7 +479,7 @@ const Businesses = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto hide-scrollbar">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto hide-scrollbar no-scrollbar">
                             <div>
                                 <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Business Name *</label>
                                 <input

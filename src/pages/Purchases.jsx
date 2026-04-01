@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-    Plus, Search, Edit, Trash2, Eye,
+    Plus, Search, Pencil, Trash2, Eye,
     ChevronLeft, ChevronRight, Filter, ClipboardList, IndianRupee, X
 } from 'lucide-react';
 import CreatePurchase from './CreatePurchase';
@@ -328,7 +328,7 @@ const Purchases = () => {
                                                 className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors"
                                                 title="Edit"
                                             >
-                                                <Edit size={16} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(p)}

@@ -1,4 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -6,8 +6,6 @@ import {
     ShoppingCart,
     Users,
     FileText,
-    Settings,
-    LogOut,
     Archive,
     Building2,
     ClipboardList,
@@ -15,17 +13,11 @@ import {
     X,
     Book
 } from 'lucide-react';
-import { logoutUser } from '../../redux/slices/authSlice';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useSelector((state) => state.auth);
     const { activeBusiness } = useSelector((state) => state.business);
     const location = useLocation();
-    const dispatch = useDispatch();
-
-    const handleLogout = () => {
-        dispatch(logoutUser());
-    };
 
     let effectiveRole = user?.role;
     if (activeBusiness && user) {
@@ -67,7 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 />
             )}
 
-            <aside className={sidebarClasses}>
+            <aside className={`${sidebarClasses} sidebar-no-scrollbar`}>
                 <div className="p-6 border-b border-white/10 flex items-start justify-between">
                     <div className="w-full flex pr-2 flex-col">
                         <div className="flex justify-between items-center w-full">
@@ -118,7 +110,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </nav>
 
                 <div className="p-4 border-t border-white/10 bg-black/10">
-                    <div className="flex items-center gap-3 px-3 py-3 mb-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-3 px-3 py-3 bg-white/5 rounded-2xl border border-white/5">
                         <div className="w-10 h-10 rounded-xl bg-forest-green flex items-center justify-center text-white font-bold shadow-lg shadow-forest-green/20">
                             {user?.name?.charAt(0) || 'U'}
                         </div>
@@ -127,13 +119,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                             <p className="text-[10px] text-white/40 truncate font-medium">{user?.email}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-all duration-200"
-                    >
-                        <LogOut size={18} className="mr-3" />
-                        Sign Out
-                    </button>
                 </div>
             </aside>
         </>

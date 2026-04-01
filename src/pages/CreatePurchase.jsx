@@ -7,7 +7,7 @@ import { recordStockMovement } from '../redux/slices/inventorySlice';
 import toast from 'react-hot-toast';
 import {
     ArrowLeft, Plus, Trash2, Save, ClipboardList,
-    Edit as EditIcon, Printer, User, Phone, Calendar,
+    Pencil, Printer, User, Phone, Calendar,
     Hash, Tag
 } from 'lucide-react';
 
@@ -231,7 +231,7 @@ const CreatePurchase = ({ onClose, purchaseData = null, isViewing = false, onEdi
                             onClick={() => onEdit && onEdit(purchaseData)}
                             className="flex items-center gap-2 px-5 py-3 bg-green-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-100"
                         >
-                            <EditIcon size={16} /> Edit
+                            <Pencil size={16} /> Edit
                         </button>
                         <button
                             onClick={() => window.print()}

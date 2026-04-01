@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Plus, Search, FileText, ChevronLeft, ChevronRight, Calendar, Filter, Eye, Edit, Trash2, IndianRupee, X } from 'lucide-react';
+import { Plus, Search, FileText, ChevronLeft, ChevronRight, Calendar, Filter, Eye, Pencil, Trash2, IndianRupee, X } from 'lucide-react';
 import CreateInvoice from './CreateInvoice';
 import { fetchSales, deleteSale, updateSale } from '../redux/slices/salesSlice';
 import { fetchProducts } from '../redux/slices/productSlice';
@@ -166,7 +166,7 @@ const Sales = () => {
                 </div>
 
                 {/* Desktop Table View */}
-                <div className="hidden lg:block overflow-x-auto">
+                <div className="hidden lg:block overflow-x-auto no-scrollbar">
                     <table className="min-w-full divide-y divide-gray-100">
                         <thead>
                             <tr className="bg-gray-50/50">
@@ -233,14 +233,14 @@ const Sales = () => {
                                                 className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
                                                 title="Edit Invoice"
                                             >
-                                                <Edit size={14} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteInvoice(sale)}
                                                 className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
                                                 title="Delete Invoice"
                                             >
-                                                <Trash2 size={14} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
@@ -280,12 +280,7 @@ const Sales = () => {
                                     >
                                         <Eye size={18} />
                                     </button>
-                                    <button
-                                        onClick={() => setEditingInvoice(sale)}
-                                        className="p-2 bg-green-50 text-green-600 rounded-lg active:scale-95 transition-all shadow-sm"
-                                    >
-                                        <Edit size={18} />
-                                    </button>
+                                    <button onClick={() => setEditingInvoice(sale)} className="p-2 bg-green-50 text-green-600 rounded-lg active:scale-95 transition-all shadow-sm"><Pencil size={18} /></button>
                                     <button
                                         onClick={() => handleDeleteInvoice(sale)}
                                         className="p-2 bg-red-50 text-red-600 rounded-lg active:scale-95 transition-all shadow-sm"
@@ -397,7 +392,7 @@ const Sales = () => {
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleRecordPayment} className="p-6 space-y-5">
+                        <form onSubmit={handleRecordPayment} className="p-6 space-y-5 no-scrollbar max-h-[80vh] overflow-y-auto">
                             <div>
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Amount (₹)</label>
                                 <input

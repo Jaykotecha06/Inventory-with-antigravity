@@ -7,7 +7,7 @@ import { fetchCustomers } from '../redux/slices/customerSlice';
 import toast from 'react-hot-toast';
 import {
     ArrowLeft, Plus, Trash2, Save, FileSpreadsheet, ChevronRight,
-    Edit as EditIcon, Printer, User, Phone, Calendar, Tag, RefreshCw
+    Pencil, Printer, User, Phone, Calendar, Tag, RefreshCw
 } from 'lucide-react';
 
 const STATUS_COLORS = {
@@ -223,7 +223,7 @@ const CreateQuotation = ({ onClose, quotationData = null, isViewing = false, onE
                             onClick={() => onEdit && onEdit(q)}
                             className="flex items-center gap-2 px-5 py-3 bg-green-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-100"
                         >
-                            <EditIcon size={16} /> Edit
+                            <Pencil size={16} /> Edit
                         </button>
                         <button
                             onClick={() => window.print()}

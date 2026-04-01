@@ -51,7 +51,7 @@
   --color-on-primary: #ffffff;
 
   /* Typography */
-  --font-headline: "Manrope", sans-serif;
+  --font-headline: "Inter", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-label: "Inter", sans-serif;
 }
@@ -59,6 +59,13 @@
 @layer base {
   body {
     @apply bg-background font-body text-on-surface;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
   }
 }
 
@@ -82,4 +89,29 @@
     radial-gradient(at 100% 0%, hsla(244, 76%, 59%, 1) 0px, transparent 50%),
     radial-gradient(at 100% 100%, hsla(245, 68%, 45%, 1) 0px, transparent 50%),
     radial-gradient(at 0% 100%, hsla(244, 76%, 59%, 1) 0px, transparent 50%);
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Aggressive Hide Scrollbar for Sidebar */
+.sidebar-no-scrollbar::-webkit-scrollbar,
+.sidebar-no-scrollbar *::-webkit-scrollbar {
+  display: none !important;
+}
+
+.sidebar-no-scrollbar,
+.sidebar-no-scrollbar * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
