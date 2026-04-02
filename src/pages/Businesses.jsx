@@ -136,6 +136,16 @@ const Businesses = () => {
         e.preventDefault();
         if (!formData.name) return toast.error("Business name is required");
 
+        // Duplicate name check (case-insensitive)
+        const isDuplicate = businesses.some(b =>
+            b.name.toLowerCase() === formData.name.toLowerCase() &&
+            (!isEditMode || b.id !== currentBusinessId)
+        );
+
+        if (isDuplicate) {
+            return toast.error(`A business with the name "${formData.name}" already exists.`);
+        }
+
         const businessData = { ...formData, ownerId: user.uid };
 
         try {
