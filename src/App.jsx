@@ -108,19 +108,19 @@ function App() {
         <Route path="/" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Layout /></AuthRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
-          <Route path="customers" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Customers /></AuthRoute>} />
+          <Route path="customers" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Customers /></AuthRoute>} />
 
           <Route path="inventory" element={<Inventory />} />
           <Route path="sales" element={<Sales />} />
           <Route path="businesses" element={<Businesses />} />
-          <Route path="purchases" element={<Purchases />} />
+          <Route path="purchases" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Purchases /></AuthRoute>} />
           <Route path="quotations" element={<Quotations />} />
           <Route path="ledger" element={<Ledger />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="team" element={<AuthRoute allowedRoles={['Admin']}><Team /></AuthRoute>} />
 
           <Route path="reports" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Reports /></AuthRoute>} />
-          <Route path="settings" element={<AuthRoute allowedRoles={['Admin']}><Settings /></AuthRoute>} />
+          <Route path="settings" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Settings /></AuthRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

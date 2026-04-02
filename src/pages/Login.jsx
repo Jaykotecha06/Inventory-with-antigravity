@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, googleLogin } from '../redux/slices/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ref, get } from 'firebase/database';
+import { db } from '../services/firebase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ const Login = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { loading, isAuthenticated } = useSelector((state) => state.auth);
+    const [invitationMessage, setInvitationMessage] = useState('');
 
     const [role, setRole] = useState('Staff');
 
@@ -19,6 +22,37 @@ const Login = () => {
             navigate('/');
         }
     }, [isAuthenticated, navigate]);
+
+    // Check for invitations in real-time
+    useEffect(() => {
+        const checkInvite = async () => {
+            if (email.includes('@') && email.length > 5) {
+                try {
+                    const sanitizedEmail = email.toLowerCase().replace(/\./g, ',');
+                    const lookupRef = ref(db, `invitation_lookup/${sanitizedEmail}`);
+                    const snap = await get(lookupRef);
+
+                    if (snap.exists()) {
+                        const invites = snap.val();
+                        const firstInvite = Object.values(invites)[0];
+                        if (firstInvite) {
+                            setInvitationMessage(`This email has been given ${firstInvite.role} access. Please entry your password to join.`);
+                        }
+                    } else {
+                        setInvitationMessage('');
+                    }
+                } catch (error) {
+                    // Silently fail if permission denied - requires specific Firebase rule to show
+                    console.log('Invitation check failed (likely permission restricted).');
+                    setInvitationMessage('');
+                }
+            } else {
+                setInvitationMessage('');
+            }
+        };
+        const timer = setTimeout(checkInvite, 500);
+        return () => clearTimeout(timer);
+    }, [email]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -171,6 +205,11 @@ const Login = () => {
                                         <span className="material-symbols-outlined text-[20px]">mail</span>
                                     </div>
                                 </div>
+                                {invitationMessage && (
+                                    <p className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg mt-2 uppercase tracking-widest animate-pulse">
+                                        {invitationMessage}
+                                    </p>
+                                )}
                             </div>
 
                             {/* Password Field */}

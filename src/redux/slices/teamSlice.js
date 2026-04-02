@@ -3,11 +3,24 @@ import { ref, get, set, remove, push, child } from 'firebase/database';
 import { db } from '../../services/firebase';
 
 // 1. Admin action: Invite User
-export const inviteUser = createAsyncThunk('team/inviteUser', async ({ businessId, email, role }, { rejectWithValue }) => {
+export const inviteUser = createAsyncThunk('team/inviteUser', async ({ businessId, email, password, role }, { getState, rejectWithValue }) => {
     try {
+        const { business: { activeBusiness } } = getState();
+        const businessName = activeBusiness?.name || 'A Business';
+
         const newInviteRef = push(child(ref(db), `businesses/${businessId}/invitations`));
-        const inviteData = { email, role, status: 'pending', createdAt: Date.now() };
+        const inviteData = { email, password, role, status: 'pending', createdAt: Date.now() };
         await set(newInviteRef, inviteData);
+
+        // Mirror to a lookup node for efficient authentication checks
+        const sanitizedEmail = email.toLowerCase().replace(/\./g, ',');
+        await set(ref(db, `invitation_lookup/${sanitizedEmail}/${newInviteRef.key}`), {
+            businessId,
+            role,
+            password,
+            businessName
+        });
+
         return { id: newInviteRef.key, ...inviteData };
     } catch (error) {
         return rejectWithValue(error.message);
@@ -45,6 +58,12 @@ export const fetchTeamMembers = createAsyncThunk('team/fetchTeamMembers', async 
 export const removeTeamMember = createAsyncThunk('team/removeTeamMember', async ({ businessId, id, type, userId }, { rejectWithValue }) => {
     try {
         if (type === 'invitation') {
+            const inviteSnap = await get(ref(db, `businesses/${businessId}/invitations/${id}`));
+            if (inviteSnap.exists()) {
+                const email = inviteSnap.val().email;
+                const sanitizedEmail = email.toLowerCase().replace(/\./g, ',');
+                await remove(ref(db, `invitation_lookup/${sanitizedEmail}/${id}`));
+            }
             await remove(ref(db, `businesses/${businessId}/invitations/${id}`));
             return { id, type };
         } else if (type === 'active') {

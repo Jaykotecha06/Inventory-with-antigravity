@@ -174,12 +174,14 @@ const Businesses = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Manage Businesses</h1>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow-sm transition-all active:scale-95 font-bold"
-                >
-                    <Plus size={18} className="mr-2" /> Add Business
-                </button>
+                {user?.role !== 'Staff' && (
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 shadow-sm transition-all active:scale-95 font-bold"
+                    >
+                        <Plus size={18} className="mr-2" /> Add Business
+                    </button>
+                )}
             </div>
 
             {userPendingInvitations?.length > 0 && (
@@ -325,20 +327,24 @@ const Businesses = () => {
                                     </td>
                                     <td className="px-4 py-5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex justify-end gap-3">
-                                            <button
-                                                onClick={() => handleOpenModal(business)}
-                                                className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
-                                                title="Edit"
-                                            >
-                                                <Pencil size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(business.id)}
-                                                className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
-                                                title="Delete"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {business.ownerId === user?.uid && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleOpenModal(business)}
+                                                        className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(business.id)}
+                                                        className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -367,18 +373,22 @@ const Businesses = () => {
                                     </div>
                                 </div>
                                 <div onClick={(e) => e.stopPropagation()} className="flex gap-3">
-                                    <button
-                                        onClick={() => handleOpenModal(business)}
-                                        className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
-                                    >
-                                        <Pencil size={16} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(business.id)}
-                                        className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {business.ownerId === user?.uid && (
+                                        <>
+                                            <button
+                                                onClick={() => handleOpenModal(business)}
+                                                className="p-1.5 text-indigo-600 hover:text-indigo-900 bg-indigo-50 rounded-lg transition-colors"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(business.id)}
+                                                className="p-1.5 text-red-600 hover:text-red-900 bg-red-50 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -454,12 +464,14 @@ const Businesses = () => {
                     <p className="text-gray-400 max-w-sm mx-auto mt-3 font-medium px-4">
                         Create your first business profile to start managing inventory, products, and sales separately.
                     </p>
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="mt-8 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-xl active:scale-95 flex items-center gap-2"
-                    >
-                        <PlusCircle size={22} /> Create My First Business
-                    </button>
+                    {user?.role !== 'Staff' && (
+                        <button
+                            onClick={() => handleOpenModal()}
+                            className="mt-8 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                        >
+                            <PlusCircle size={22} /> Create My First Business
+                        </button>
+                    )}
                 </div>
             )}
 

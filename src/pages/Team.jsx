@@ -12,6 +12,7 @@ const Team = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [role, setRole] = useState('Staff');
 
     useEffect(() => {
@@ -30,10 +31,11 @@ const Team = () => {
         }
 
         try {
-            await dispatch(inviteUser({ businessId: activeBusiness.id, email, role })).unwrap();
+            await dispatch(inviteUser({ businessId: activeBusiness.id, email, password, role })).unwrap();
             toast.success('Invitation sent successfully!');
             setIsModalOpen(false);
             setEmail('');
+            setPassword('');
             setRole('Staff');
         } catch (error) {
             toast.error('Failed to send invitation');
@@ -219,6 +221,22 @@ const Team = () => {
                                         className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Password</label>
+                                <div className="relative">
+                                    <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                    <input
+                                        type="password"
+                                        required
+                                        placeholder="Set a password for them"
+                                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        minLength="6"
                                     />
                                 </div>
                             </div>

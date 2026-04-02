@@ -245,9 +245,11 @@ const Customers = () => {
                                             <button onClick={() => handleOpenModal(customer)} className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition-colors" title="Edit">
                                                 <Pencil size={16} />
                                             </button>
-                                            <button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete">
-                                                <Trash2 size={16} />
-                                            </button>
+                                            {canManage && (
+                                                <button onClick={() => handleDelete(customer.id)} className="text-red-600 hover:text-red-900 bg-red-50 p-1.5 rounded-lg transition-colors" title="Delete">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
