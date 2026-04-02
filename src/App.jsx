@@ -6,6 +6,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { ref, get, onValue } from 'firebase/database';
 import { auth, db } from './services/firebase';
 import { setUser, setAuthLoading } from './redux/slices/authSlice';
+import { fetchRoles } from './redux/slices/roleSlice';
 
 import AuthRoute from './components/AuthRoute';
 import Layout from './components/layout/Layout';
@@ -29,6 +30,13 @@ import Sessions from './pages/Sessions';
 function App() {
   const dispatch = useDispatch();
   const { loading } = useSelector(state => state.auth);
+  const { activeBusiness } = useSelector(state => state.business);
+
+  useEffect(() => {
+    if (activeBusiness?.id) {
+      dispatch(fetchRoles(activeBusiness.id));
+    }
+  }, [dispatch, activeBusiness]);
 
   useEffect(() => {
     let sessionUnsubscribe = null;
@@ -107,20 +115,20 @@ function App() {
 
         <Route path="/" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Layout /></AuthRoute>}>
           <Route index element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="customers" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Customers /></AuthRoute>} />
+          <Route path="products" element={<AuthRoute requiredPermission="products"><Products /></AuthRoute>} />
+          <Route path="customers" element={<AuthRoute requiredPermission="customers"><Customers /></AuthRoute>} />
 
-          <Route path="inventory" element={<Inventory />} />
-          <Route path="sales" element={<Sales />} />
+          <Route path="inventory" element={<AuthRoute requiredPermission="inventory"><Inventory /></AuthRoute>} />
+          <Route path="sales" element={<AuthRoute requiredPermission="sales"><Sales /></AuthRoute>} />
           <Route path="businesses" element={<Businesses />} />
-          <Route path="purchases" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Purchases /></AuthRoute>} />
-          <Route path="quotations" element={<Quotations />} />
+          <Route path="purchases" element={<AuthRoute requiredPermission="purchases"><Purchases /></AuthRoute>} />
+          <Route path="quotations" element={<AuthRoute requiredPermission="quotations"><Quotations /></AuthRoute>} />
           <Route path="ledger" element={<Ledger />} />
           <Route path="sessions" element={<Sessions />} />
-          <Route path="team" element={<AuthRoute allowedRoles={['Admin']}><Team /></AuthRoute>} />
+          <Route path="team" element={<AuthRoute requiredPermission="team"><Team /></AuthRoute>} />
 
-          <Route path="reports" element={<AuthRoute allowedRoles={['Admin', 'Manager']}><Reports /></AuthRoute>} />
-          <Route path="settings" element={<AuthRoute allowedRoles={['Admin', 'Manager', 'Staff']}><Settings /></AuthRoute>} />
+          <Route path="reports" element={<AuthRoute requiredPermission="reports"><Reports /></AuthRoute>} />
+          <Route path="settings" element={<AuthRoute requiredPermission="settings"><Settings /></AuthRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,6 +9,7 @@ import businessReducer from './slices/businessSlice';
 import purchaseReducer from './slices/purchaseSlice';
 import quotationReducer from './slices/quotationSlice';
 import teamReducer from './slices/teamSlice';
+import roleReducer from './slices/roleSlice';
 
 import sessionReducer from './slices/sessionSlice';
 
@@ -25,5 +26,6 @@ export const store = configureStore({
         quotations: quotationReducer,
         team: teamReducer,
         sessions: sessionReducer,
+        roles: roleReducer,
     },
 });

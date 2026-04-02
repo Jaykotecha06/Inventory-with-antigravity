@@ -1,23 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTeamMembers, inviteUser, removeTeamMember } from '../redux/slices/teamSlice';
-import { Plus, Trash2, Mail, Shield, User as UserIcon, X, Clock } from 'lucide-react';
+import { Plus, Trash2, Mail, Shield, User as UserIcon, X, Clock, Settings as SettingsIcon, Check, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { fetchRoles, updateRolePermissions } from '../redux/slices/roleSlice';
 
 const Team = () => {
     const dispatch = useDispatch();
     const { activeBusiness } = useSelector(state => state.business);
     const { members, invitations, loading } = useSelector(state => state.team);
     const { user } = useSelector(state => state.auth);
-
+    const { permissions: rolePermissions, loading: rolesLoading } = useSelector(state => state.roles);
+    const [activeTab, setActiveTab] = useState('members');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('Staff');
 
+    // Role Management States
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+    const [editingRole, setEditingRole] = useState(null);
+    const [newRoleName, setNewRoleName] = useState('');
+    const [rolePerms, setRolePerms] = useState({});
+
+    const modules = [
+        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'products', label: 'Products' },
+        { id: 'customers', label: 'Customers' },
+        { id: 'inventory', label: 'Inventory' },
+        { id: 'sales', label: 'Sales' },
+        { id: 'quotations', label: 'Quotations' },
+        { id: 'purchases', label: 'Purchases' },
+        { id: 'reports', label: 'Reports' },
+        { id: 'team', label: 'Team' },
+        { id: 'settings', label: 'Settings' }
+    ];
+
     useEffect(() => {
         if (activeBusiness?.id) {
             dispatch(fetchTeamMembers(activeBusiness.id));
+            dispatch(fetchRoles(activeBusiness.id));
         }
     }, [dispatch, activeBusiness]);
 
@@ -36,10 +58,46 @@ const Team = () => {
             setIsModalOpen(false);
             setEmail('');
             setPassword('');
-            setRole('Staff');
+            // Set default to first available role
+            const availableRoles = Object.keys(rolePermissions || {});
+            setRole(availableRoles.includes('Staff') ? 'Staff' : availableRoles[0]);
         } catch (error) {
             toast.error('Failed to send invitation');
         }
+    };
+
+    const handleSaveRole = async (e) => {
+        e.preventDefault();
+        const roleName = editingRole || newRoleName;
+        if (!roleName) return;
+
+        try {
+            await dispatch(updateRolePermissions({
+                businessId: activeBusiness.id,
+                roleName,
+                permissions: rolePerms
+            })).unwrap();
+            toast.success(`Role ${editingRole ? 'updated' : 'created'} successfully!`);
+            setIsRoleModalOpen(false);
+            setEditingRole(null);
+            setNewRoleName('');
+            setRolePerms({});
+        } catch (error) {
+            toast.error('Failed to save role');
+        }
+    };
+
+    const openEditRole = (name, perms) => {
+        setEditingRole(name);
+        setRolePerms(perms || {});
+        setIsRoleModalOpen(true);
+    };
+
+    const togglePermission = (modId) => {
+        setRolePerms(prev => ({
+            ...prev,
+            [modId]: !prev[modId]
+        }));
     };
 
     const handleRemove = async (id, type, userId) => {
@@ -82,114 +140,148 @@ const Team = () => {
                     <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Team Management</h1>
                     <p className="text-sm font-medium text-gray-500 mt-1">Manage access to {activeBusiness?.name}</p>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 transition"
-                >
-                    <Plus size={18} className="mr-2" /> Invite Member
-                </button>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <h2 className="text-lg font-bold text-gray-800">Active Members</h2>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-white">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {/* The owner is not stored in users list, but we can display them based on activeBusiness.ownerId if we want, but for now we'll just show the invited members */}
-                            {members.length > 0 ? members.map((member) => (
-                                <tr key={member.userId} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                                <UserIcon size={16} className="text-indigo-600" />
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-bold text-gray-900">{member.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 flex items-center w-max rounded-md text-xs font-bold uppercase ${member.role === 'Manager' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-                                            <Shield size={12} className="mr-1" /> {member.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : 'Unknown'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button
-                                            onClick={() => handleRemove(null, 'active', member.userId)}
-                                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            )) : (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-sm text-gray-500 italic">No additional active members.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {invitations.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 bg-amber-50/50">
-                        <h2 className="text-lg font-bold text-gray-800 flex items-center"><Clock size={18} className="mr-2 text-amber-500" /> Pending Invitations</h2>
+                <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 p-1 rounded-lg mr-4">
+                        <button
+                            onClick={() => setActiveTab('members')}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'members' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Members
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('roles')}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'roles' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Roles
+                        </button>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-white">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent Date</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-100">
-                                {invitations.map((inv) => (
-                                    <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center text-sm text-gray-900 font-medium">
-                                                <Mail size={16} className="text-gray-400 mr-2" />
-                                                {inv.email}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="px-2 py-1 rounded-md text-xs font-bold uppercase bg-gray-100 text-gray-600">
-                                                {inv.role}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(inv.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button
-                                                onClick={() => handleRemove(inv.id, 'invitation', null)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Revoke
-                                            </button>
-                                        </td>
+                    {activeTab === 'members' ? (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 transition"
+                        >
+                            <Plus size={18} className="mr-2" /> Invite Member
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                setEditingRole(null);
+                                setNewRoleName('');
+                                setRolePerms({});
+                                setIsRoleModalOpen(true);
+                            }}
+                            className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md shadow-sm hover:bg-emerald-700 transition"
+                        >
+                            <Plus size={18} className="mr-2" /> Add Role
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {activeTab === 'members' ? (
+                <>
+
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50">
+                            <h2 className="text-lg font-bold text-gray-800">Active Members</h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-white">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {/* The owner is not stored in users list, but we can display them based on activeBusiness.ownerId if we want, but for now we'll just show the invited members */}
+                                    {members.length > 0 ? members.map((member) => (
+                                        <tr key={member.userId} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center">
+                                                    <div className="flex-shrink-0 h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                        <UserIcon size={16} className="text-indigo-600" />
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        <div className="text-sm font-bold text-gray-900">{member.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 flex items-center w-max rounded-md text-xs font-bold uppercase ${member.role === 'Manager' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+                                                    <Shield size={12} className="mr-1" /> {member.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString() : 'Unknown'}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => handleRemove(null, 'active', member.userId)}
+                                                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="4" className="px-6 py-8 text-center text-sm text-gray-500 italic">No additional active members.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
+                </>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Object.entries(rolePermissions || {}).map(([name, perms]) => (
+                        <div key={name} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                        <Shield size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">{name}</h3>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Role Definition</p>
+                                    </div>
+                                </div>
+                                {name !== 'Admin' && (
+                                    <button
+                                        onClick={() => openEditRole(name, perms)}
+                                        className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 hover:text-indigo-600 transition-colors"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Permissions</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {perms.all ? (
+                                        <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-[10px] font-bold uppercase tracking-tight flex items-center">
+                                            <Check size={10} className="mr-1" /> Full System Access
+                                        </span>
+                                    ) : (
+                                        modules.map(mod => perms[mod.id] && (
+                                            <span key={mod.id} className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold uppercase tracking-tight">
+                                                {mod.label}
+                                            </span>
+                                        ))
+                                    )}
+                                    {!perms.all && !Object.values(perms).some(v => v) && (
+                                        <span className="text-xs text-gray-400 italic font-medium tracking-tight">No permissions assigned</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
 
@@ -202,8 +294,8 @@ const Team = () => {
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-gray-100 animate-in zoom-in duration-300 z-10 m-4">
                         <div className="flex justify-between items-center p-6 border-b bg-gray-50">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">Invite Team Member</h3>
-                                <p className="text-sm text-gray-500 mt-1">They will receive an invitation when they log in.</p>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight">Invite Team Member</h3>
+                                <p className="text-sm text-gray-500 mt-1">Credentials will be used for direct login.</p>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={24} />
@@ -211,14 +303,14 @@ const Team = () => {
                         </div>
                         <form onSubmit={handleInvite} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Email Address</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         type="email"
                                         required
                                         placeholder="colleague@example.com"
-                                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
@@ -226,14 +318,14 @@ const Team = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Password</label>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Password</label>
                                 <div className="relative">
                                     <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                     <input
                                         type="password"
                                         required
-                                        placeholder="Set a password for them"
-                                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900"
+                                        placeholder="Set initial password"
+                                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         minLength="6"
@@ -242,32 +334,88 @@ const Team = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Assign Role</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div
-                                        onClick={() => setRole('Manager')}
-                                        className={`cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all ${role === 'Manager' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
-                                    >
-                                        <Shield size={20} className="mb-1" />
-                                        <span className="font-bold text-sm">Manager</span>
-                                    </div>
-                                    <div
-                                        onClick={() => setRole('Staff')}
-                                        className={`cursor-pointer border-2 rounded-xl p-3 flex flex-col items-center justify-center transition-all ${role === 'Staff' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}
-                                    >
-                                        <UserIcon size={20} className="mb-1" />
-                                        <span className="font-bold text-sm">Staff</span>
-                                    </div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Assign Role</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {Object.keys(rolePermissions || {}).map(roleName => (
+                                        <button
+                                            key={roleName}
+                                            type="button"
+                                            onClick={() => setRole(roleName)}
+                                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border-2 ${role === roleName
+                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100'
+                                                : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            {roleName}
+                                        </button>
+                                    ))}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2 ml-1">
-                                    {role === 'Manager' ? 'Managers can edit and manage items but cannot alter business settings.' : 'Staff can only create records (like invoices) and view public data.'}
-                                </p>
                             </div>
 
                             <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 border border-gray-300 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all">Cancel</button>
-                                <button type="submit" disabled={loading} className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md disabled:bg-indigo-400">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 border-2 border-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">Cancel</button>
+                                <button type="submit" disabled={loading} className="flex-2 bg-indigo-600 text-white py-3.5 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:bg-indigo-400">
                                     {loading ? 'Sending...' : 'Send Invite'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Role Modal */}
+            {isRoleModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setIsRoleModalOpen(false)}></div>
+
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden relative border border-gray-100 animate-in zoom-in duration-300 z-10 m-4">
+                        <div className="flex justify-between items-center p-6 border-b bg-gray-50">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 tracking-tight">{editingRole ? 'Edit Role' : 'Create Custom Role'}</h3>
+                                <p className="text-sm text-gray-500 mt-1">Define what users in this role can see.</p>
+                            </div>
+                            <button onClick={() => setIsRoleModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSaveRole} className="p-6 space-y-6">
+                            {!editingRole && (
+                                <div>
+                                    <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Role Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Sales Expert"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold"
+                                        value={newRoleName}
+                                        onChange={(e) => setNewRoleName(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-3 ml-1">Module Permissions</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {modules.map(mod => (
+                                        <div
+                                            key={mod.id}
+                                            onClick={() => togglePermission(mod.id)}
+                                            className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer ${rolePerms[mod.id]
+                                                ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                                                : 'border-gray-100 bg-gray-50/50 text-gray-400 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            <span className="text-xs font-bold uppercase tracking-tight">{mod.label}</span>
+                                            {rolePerms[mod.id] ? <Check size={16} /> : <div className="w-4 h-4 rounded-full border-2 border-gray-200"></div>}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-2 flex gap-3">
+                                <button type="button" onClick={() => setIsRoleModalOpen(false)} className="flex-1 py-3.5 border-2 border-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all">Cancel</button>
+                                <button type="submit" disabled={rolesLoading} className="flex-2 bg-indigo-600 text-white py-3.5 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:bg-indigo-400">
+                                    {rolesLoading ? 'Saving...' : (editingRole ? 'Update Role' : 'Create Role')}
                                 </button>
                             </div>
                         </form>

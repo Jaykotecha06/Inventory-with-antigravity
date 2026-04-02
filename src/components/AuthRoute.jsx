@@ -1,9 +1,10 @@
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const AuthRoute = ({ children, allowedRoles }) => {
+const AuthRoute = ({ children, requiredPermission, allowedRoles }) => {
     const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
     const { activeBusiness } = useSelector((state) => state.business);
+    const { permissions: rolePermissions } = useSelector((state) => state.roles);
 
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -22,8 +23,21 @@ const AuthRoute = ({ children, allowedRoles }) => {
         }
     }
 
+    if (effectiveRole === 'Admin') return children;
+
+    const currentPermissions = rolePermissions?.[effectiveRole] || {};
+
+    // Check for explicit allowedRoles (backward compatibility or super-special cases)
     if (allowedRoles && !allowedRoles.includes(effectiveRole)) {
-        return <Navigate to="/" replace />; // Redirect to dashboard if not authorized
+        return <Navigate to="/" replace />;
+    }
+
+    // Dynamic Permission check
+    if (requiredPermission) {
+        if (currentPermissions.all) return children;
+        if (!currentPermissions[requiredPermission]) {
+            return <Navigate to="/" replace />;
+        }
     }
 
     return children;

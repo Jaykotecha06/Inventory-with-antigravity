@@ -17,6 +17,7 @@ import {
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useSelector((state) => state.auth);
     const { activeBusiness } = useSelector((state) => state.business);
+    const { permissions: rolePermissions } = useSelector((state) => state.roles);
     const location = useLocation();
 
     let effectiveRole = user?.role;
@@ -29,19 +30,25 @@ const Sidebar = ({ isOpen, onClose }) => {
     }
 
     const menuItems = [
-        { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['Admin', 'Manager'] },
-        { path: '/businesses', icon: <Building2 size={20} />, label: 'My Businesses', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/products', icon: <Package size={20} />, label: 'Products', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/customers', icon: <Users size={20} />, label: 'Customers', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/inventory', icon: <Archive size={20} />, label: 'Inventory', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/purchases', icon: <ClipboardList size={20} />, label: 'Purchases', roles: ['Admin', 'Manager'] },
-        { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/quotations', icon: <FileSpreadsheet size={20} />, label: 'Quotations', roles: ['Admin', 'Manager', 'Staff'] },
-        { path: '/reports', icon: <FileText size={20} />, label: 'Reports', roles: ['Admin', 'Manager'] },
-        { path: '/team', icon: <Users size={20} />, label: 'Team', roles: ['Admin'] },
+        { path: '/', icon: <LayoutDashboard size={20} />, label: 'Dashboard', permission: 'dashboard' },
+        { path: '/businesses', icon: <Building2 size={20} />, label: 'My Businesses', public: true },
+        { path: '/products', icon: <Package size={20} />, label: 'Products', permission: 'products' },
+        { path: '/customers', icon: <Users size={20} />, label: 'Customers', permission: 'customers' },
+        { path: '/inventory', icon: <Archive size={20} />, label: 'Inventory', permission: 'inventory' },
+        { path: '/purchases', icon: <ClipboardList size={20} />, label: 'Purchases', permission: 'purchases' },
+        { path: '/sales', icon: <ShoppingCart size={20} />, label: 'Sales', permission: 'sales' },
+        { path: '/quotations', icon: <FileSpreadsheet size={20} />, label: 'Quotations', permission: 'quotations' },
+        { path: '/reports', icon: <FileText size={20} />, label: 'Reports', permission: 'reports' },
+        { path: '/team', icon: <Users size={20} />, label: 'Team', permission: 'team' },
     ];
 
-    const filteredMenu = menuItems.filter(item => item.roles.includes(effectiveRole));
+    const currentPermissions = rolePermissions?.[effectiveRole] || {};
+    const filteredMenu = menuItems.filter(item => {
+        if (effectiveRole === 'Admin') return true;
+        if (item.public) return true;
+        if (currentPermissions.all) return true;
+        return currentPermissions[item.permission];
+    });
 
     const sidebarClasses = `
         fixed inset-y-0 left-0 z-50 w-64 bg-[#1a2e18] text-white flex flex-col transition-transform duration-300 transform 
